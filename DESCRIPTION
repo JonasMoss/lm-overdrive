@@ -1,12 +1,13 @@
-Package: regression
+Package: lmoverdrive
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Experimentation with STAN and linear models.
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: Jonas Moss
+Maintainer: Jonas Moss <jonas.gjertsen@gmail.com>
+Description: Have fun with linear models! Experiment with link functions, 
+   all kinds of priors on your parameters, a wealth of families, and regress
+   your standard deviation as it was a mean.
+License: MIT
 Encoding: UTF-8
 LazyData: true
 Suggests: testthat

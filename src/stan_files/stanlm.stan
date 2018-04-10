@@ -5,11 +5,6 @@ data {
   vector[n] y;                   // Vector of responses.
   int<lower = 0> family;         // Integer-coded family identifier.
 
-  // Some families have more than two parameters. They are captured here.
-  int<lower = 0> extra_positive_parameters;
-  int<lower = 0> extra_unbounded_parameters;
-  int<lower = 0> extra_unit_parameters;
-
   // Here comes boilerplate code. 'mean', 'sd' and 'probs' use exactly the same
   // code. They have to be declared in their own blocks, hence the boilerplate.
 
@@ -75,24 +70,38 @@ data {
   real prior_prob_positive[p_prob_positive, mp];
   real prior_prob_unit[p_prob_unit, mp];
 
+  // Data for extra parameters.
+
+  int<lower = 0> p_extra_unbounded;
+  int<lower = 0> p_extra_positive;
+  int<lower = 0> p_extra_unit;
+
+  int prior_types_extra_unbounded[p_extra_unbounded];
+  int prior_types_extra_positive[p_extra_positive];
+  int prior_types_extra_unit[p_extra_unit];
+
+  real prior_extra_unbounded[p_extra_unbounded, mp];
+  real prior_extra_positive[p_extra_positive, mp];
+  real prior_extra_unit[p_extra_unit, mp];
+
 }
 
 parameters {
-  vector[p_mean_unbounded]                  beta_mean_unbounded;
-  vector<lower = 0>[p_mean_positive]        beta_mean_positive;
-  vector<lower = 0, upper = 1>[p_mean_unit] beta_mean_unit;
+  vector[p_mean_unbounded]                   beta_mean_unbounded;
+  vector<lower = 0>[p_mean_positive]         beta_mean_positive;
+  vector<lower = 0, upper = 1>[p_mean_unit]  beta_mean_unit;
 
-  vector[p_sd_unbounded]                    beta_sd_unbounded;
-  vector<lower = 0>[p_sd_positive]          beta_sd_positive;
-  vector<lower = 0, upper = 1>[p_sd_unit]   beta_sd_unit;
+  vector[p_sd_unbounded]                     beta_sd_unbounded;
+  vector<lower = 0>[p_sd_positive]           beta_sd_positive;
+  vector<lower = 0, upper = 1>[p_sd_unit]    beta_sd_unit;
 
-  vector[p_prob_unbounded]                  beta_prob_unbounded;
-  vector<lower = 0>[p_prob_positive]        beta_prob_positive;
-  vector<lower = 0, upper = 1>[p_prob_unit] beta_prob_unit;
+  vector[p_prob_unbounded]                   beta_prob_unbounded;
+  vector<lower = 0>[p_prob_positive]         beta_prob_positive;
+  vector<lower = 0, upper = 1>[p_prob_unit]  beta_prob_unit;
 
-  real<lower = 0> positive_parameters[extra_positive_parameters];
-  real<lower = 0> unbounded_parameters[extra_unbounded_parameters];
-  real<lower = 0> unit_parameters[extra_unit_parameters];
+  vector[p_extra_unbounded]                  beta_extra_unbounded;
+  vector<lower = 0>[p_extra_positive]        beta_extra_positive;
+  vector<lower = 0, upper = 1>[p_extra_unit] beta_extra_unit;
 }
 
 model {
@@ -254,7 +263,7 @@ model {
     for(i in 1:n) mean_[i] = 1/sqrt(mean_[i]);
   } else if (mean_link_type == 4) {
     for(i in 1:n) mean_[i] = exp(mean_[i]);
-  } else if (mean_link_type == 8) {
+  } else if (mean_link_type == 5) {
     for(i in 1:n) mean_[i] = mean_[i]^2;
   }
 
@@ -404,7 +413,7 @@ model {
     for(i in 1:n) sd_[i] = 1/sqrt(sd_[i]);
   } else if (sd_link_type == 4) {
     for(i in 1:n) sd_[i] = exp(sd_[i]);
-  } else if (sd_link_type == 8) {
+  } else if (sd_link_type == 5) {
     for(i in 1:n) sd_[i] = sd_[i]^2;
   }
 
@@ -555,8 +564,141 @@ model {
     for(i in 1:n) prob_[i] = 1/sqrt(prob_[i]);
   } else if (prob_link_type == 4) {
     for(i in 1:n) prob_[i] = exp(prob_[i]);
-  } else if (prob_link_type == 8) {
+  } else if (prob_link_type == 5) {
     for(i in 1:n) prob_[i] = prob_[i]^2;
+  }
+
+
+  //////////////////////
+  // Extra parameters //
+  //////////////////////
+
+  // Handling of priors.
+  if(p_extra_unbounded > 0){
+    for(i in 1:p_extra_unbounded) {
+      if (prior_types_extra_unbounded[i] == 100) {
+
+        beta_extra_unbounded[i] ~ normal(prior_extra_unbounded[i, 1],
+                                        prior_extra_unbounded[i, 2]);
+
+      } else if (prior_types_extra_unbounded[i] == 101) {
+
+        beta_extra_unbounded[i] ~ exp_mod_normal(prior_extra_unbounded[i, 1],
+                                 prior_extra_unbounded[i, 2],
+                                 prior_extra_unbounded[i, 3]);
+
+      } else if (prior_types_extra_unbounded[i] == 102) {
+
+        beta_extra_unbounded[i] ~ skew_normal(prior_extra_unbounded[i, 1],
+                              prior_extra_unbounded[i, 2],
+                              prior_extra_unbounded[i, 2]);
+
+      } else if (prior_types_extra_unbounded[i] == 103) {
+
+        beta_extra_unbounded[i] ~ student_t(prior_extra_unbounded[i, 1],
+                                           prior_extra_unbounded[i, 2],
+                                           prior_extra_unbounded[i, 3]);
+
+      } else if (prior_types_extra_unbounded[i] == 104) {
+
+        beta_extra_unbounded[i] ~ cauchy(prior_extra_unbounded[i, 1],
+                                        prior_extra_unbounded[i, 2]);
+
+      } else if (prior_types_extra_unbounded[i] == 105) {
+
+        beta_extra_unbounded[i] ~ double_exponential(prior_extra_unbounded[i, 1],
+                                                    prior_extra_unbounded[i, 2]);
+
+      } else if (prior_types_extra_unbounded[i] == 106) {
+
+        beta_extra_unbounded[i] ~ logistic(prior_extra_unbounded[i, 1],
+                                          prior_extra_unbounded[i, 2]);
+
+      } else if (prior_types_extra_unbounded[i] == 107) {
+
+        beta_extra_unbounded[i] ~ gumbel(prior_extra_unbounded[i, 1],
+                                        prior_extra_unbounded[i, 2]);
+
+      }
+    }
+  }
+
+  if(p_extra_positive > 0) {
+    for(i in 1:p_extra_positive) {
+      if (prior_types_extra_positive[i] == 200) {
+
+        beta_extra_positive[i] ~ lognormal(prior_extra_positive[i, 1],
+                                          prior_extra_positive[i, 2]);
+
+      } else if (prior_types_extra_positive[i] == 201) {
+
+        beta_extra_positive[i] ~ chi_square(prior_extra_positive[i, 1]);
+
+      } else if (prior_types_extra_positive[i] == 202) {
+
+        beta_extra_positive[i] ~ inv_chi_square(prior_extra_positive[i, 1]);
+
+      } else if (prior_types_extra_positive[i] == 203) {
+
+        beta_extra_positive[i] ~ scaled_inv_chi_square(prior_extra_positive[i, 1],
+                                                      prior_extra_positive[i, 2]);
+
+      } else if (prior_types_extra_positive[i] == 204) {
+
+        beta_extra_positive[i] ~ exponential(prior_extra_positive[i, 1]);
+
+      } else if (prior_types_extra_positive[i] == 205) {
+
+        beta_extra_positive[i] ~ gamma(prior_extra_positive[i, 1],
+                                      prior_extra_positive[i, 2]);
+
+      } else if (prior_types_extra_positive[i] == 206) {
+
+        beta_extra_positive[i] ~ inv_gamma(prior_extra_positive[i, 1],
+                                          prior_extra_positive[i, 2]);
+
+      } else if (prior_types_extra_positive[i] == 207) {
+
+        beta_extra_positive[i] ~ weibull(prior_extra_positive[i, 1],
+                                        prior_extra_positive[i, 2]);
+
+      } else if (prior_types_extra_positive[i] == 208) {
+
+        beta_extra_positive[i] ~ frechet(prior_extra_positive[i, 1],
+                                        prior_extra_positive[i, 2]);
+
+      } else if (prior_types_extra_positive[i] == 300) {
+
+        beta_extra_positive[i] ~ rayleigh(prior_extra_positive[i, 1]);
+
+      } else if (prior_types_extra_positive[i] == 301) {
+
+        beta_extra_positive[i] ~ wiener(prior_extra_positive[i, 1],
+                                       prior_extra_positive[i, 2],
+                                       prior_extra_positive[i, 3],
+                                       prior_extra_positive[i, 4]);
+
+      } else if (prior_types_extra_positive[i] == 400) {
+
+        beta_extra_positive[i] ~ pareto(prior_extra_positive[i, 1],
+                                       prior_extra_positive[i, 2]);
+
+      } else if (prior_types_extra_positive[i] == 401) {
+
+        beta_extra_positive[i] ~ pareto_type_2(prior_extra_positive[i, 1],
+                                              prior_extra_positive[i, 2],
+                                              prior_extra_positive[i, 3]);
+      }
+    }
+  }
+
+  if(p_extra_unit > 0) {
+    for(i in 1:p_extra_unit) {
+      if (prior_types_extra_unit[i] == 500) {
+         beta_extra_unit[i] ~ beta(prior_extra_unit[i, 1],
+                                   prior_extra_unit[i, 2]);
+      }
+    }
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -580,7 +722,7 @@ model {
   } else if (family == 3) {
 
     // Skew normal.
-    real alpha = unbounded_parameters[1];
+    real alpha = beta_extra_unbounded[1];
     real delta = alpha/sqrt(1 + alpha^2);
     vector[n] omega = sd_/sqrt(1 - delta^2*2/pi());
     vector[n] xi = mean_ - omega*(delta*sqrt(2/pi()));

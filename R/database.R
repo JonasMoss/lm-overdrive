@@ -1,3 +1,5 @@
+# This is a database of supported priors, families, and links.
+
 family_list = list(
   normal = list(integer = 1,
                 domain  = "unbounded",

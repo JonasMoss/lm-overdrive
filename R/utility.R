@@ -52,22 +52,10 @@ add_elements = function(input, ..., .eager = TRUE) {
   input
 }
 
-
-
-# is_formula = function(obj) inherits(obj, "formula")
-#
-# new_formula = function (rhs, lhs = NULL, env = parent.frame()) {
-#   if (!is.environment(env)) {
-#     stop("`env` must be an environment", call. = FALSE)
-#   }
-#   if (is.null(lhs)) {
-#     f <- call("~", rhs)
-#   }
-#   else {
-#     f <- call("~", lhs, rhs)
-#   }
-#   structure(f, class = "formula", .Environment = env)
-# }
+#' Is a formula tow-sided?
+#'
+#' @param formula A formula.
+#' @return Logical; \code{TRUE} if the formula is two-sided, an error otherwise.
 
 is_two_sided = function(formula) {
   formula_str = paste(as.character(formula)[2], "~", as.character(formula)[3])

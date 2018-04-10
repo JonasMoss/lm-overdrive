@@ -74,3 +74,28 @@ is_two_sided = function(formula) {
   msg = paste0("The formula must be two-sided, got '", formula_str, "'.")
   assertthat::assert_that(length(formula) == 3, msg = msg)
 }
+
+#' Get the argument list from a \code{call}.
+#'
+#' @param call An object of class \code{call}.
+#' @return The named argument list from the \code{call}.
+
+extract_arguments = function(call) {
+  assertthat::assert_that(inherits(call, "call"), msg = paste0("The 'call'",
+    " argument must have class 'call', but has class '", class(call), "'."))
+  k = length(call) - 1
+  arguments = lapply(2:(k + 1), function(i) call[[i]])
+  names(arguments) = names(call)[2:(k + 1)]
+  arguments
+}
+
+#' Get the function \code{name} from a \code{call}.
+#'
+#' @param call An object of class \code{call}.
+#' @return The function of the call \code{call}, a \code{name} object.
+
+extract_function_name = function(call) {
+  assertthat::assert_that(inherits(call, "call"), msg = paste0("The 'call'",
+    " argument must have class 'call', but has class '", class(call), "'."))
+  call[[1]]
+}

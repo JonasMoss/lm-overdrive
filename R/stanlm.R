@@ -4,17 +4,13 @@
 #'
 #' @param formula The formula.
 #' @param data The data.
+#' @param p Formula for p.
 #' @param priors List of formulas. Priors for the coefficients.
-#' @param family String. Likelihood function.
 #' @param link String. Link function.
 
-stanlm = function(formula, data, priors, family = "normal",
-                  link   = "identity") {
-  if(missing(data)) data = NULL
+stanlm = function(formula, data, priors) {
 
-  link        = match.arg(link, names(link_list)
-  link_type   = link_to_int(link)
-  family      = match.arg(family, names(family_list))
+  if(missing(data)) data = NULL
 
   x = model.matrix(formula, data = data)
   y = model.response(model.frame(formula, data = data))

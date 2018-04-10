@@ -49,7 +49,6 @@ formula_to_list = function(formula, type = "mean") {
   return_list
 }
 
-
 #' Convert a family formula
 #'
 #' Convert a family formula into a list containing the response, the
@@ -95,7 +94,7 @@ family_formula_to_list = function(formula) {
 
   c(list(response = rlang::new_formula(rhs = 0, lhs = formula[[2]], env = env),
          family = family), formula_to_list(sd_formula, type = "sd"),
-                           lformula_to_list(mean_formula, type = "mean"))
+                           formula_to_list(mean_formula, type = "mean"))
 }
 
 

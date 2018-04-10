@@ -39,9 +39,15 @@ family_list = list(
               domain  = "unit",
               mean    = "unit",
               sd      = "unit",
-              extra_parameters = NULL))
+              extra_parameters = NULL),
 
-links = list(
+  exp_mod_normal = list(integer = 8,
+                        domain  = "unbounded",
+                        mean    = "unbounded",
+                        sd      = "positive",
+                        extra_parameters = list(lambda = "positive")))
+
+link_list = list(
   inverse = list(
     integer = 2,
     keys    = c("inverse(x)", "1/x"),
@@ -89,60 +95,103 @@ links = list(
 
 prior_list = list(
   "normal" = list(integer = 100,
-                  domian  = "unbounded",
+                  domain  = "unbounded",
                   parameters = list(mu     = "unbounded",
                                     sigma  = "positive")),
 
   "exp_mod_normal" = list(integer = 101,
-                          domian  = "unbounded",
+                          domain  = "unbounded",
                           parameters = list(mu     = "unbounded",
                                             sigma  = "positive",
                                             lambda = "positive")),
 
   "skew_normal" = list(integer = 102,
-                       domian  = "unbounded",
+                       domain  = "unbounded",
                        parameters = list(xi    = "unbounded",
                                          omega = "positive",
                                          alpha = "unbounded")),
 
   "student_t" = list(integer = 103,
-                     domian  = "unbounded",
+                     domain  = "unbounded",
                      parameters = list(nu    = "positive",
                                        mu    = "unbounded",
                                        alpha = "positive")),
 
   "cauchy" = list(integer = 104,
-                  domian  = "unbounded",
+                  domain  = "unbounded",
                   parameters = list(mu    = "unbounded",
                                     sigma = "positive")),
 
   "double_exponential" = list(integer = 105,
-                              domian  = "unbounded",
+                              domain  = "unbounded",
                               parameters = list(mu    = "unbounded",
                                                 sigma = "positive")),
 
   "logistic" = list(integer = 106,
-                    domian  = "unbounded",
+                    domain  = "unbounded",
                     parameters = list(mu    = "unbounded",
                                       sigma = "positive")),
 
   "gumbel" = list(integer = 107,
-                  domian  = "unbounded",
+                  domain  = "unbounded",
                   parameters = list(mu    = "unbounded",
                                     sigma = "positive")),
 
-  "lognormal"             = 200, # positive
-  "chi_square"            = 201,
-  "inv_chi_square"        = 202,
-  "scaled_inv_chi_square" = 203,
-  "exponential"           = 204,
-  "gamma"                 = 205,
-  "inv_gamma"             = 206,
-  "weibull"               = 207,
-  "frechet"               = 208,
-  "rayleigh"              = 300, # non-negative
-  "wiener"                = 301,
-  "pareto"                = 400, # bounded below
-  "pareto_type2"          = 401,
-  "beta"                  = 500
+  "lognormal" = list(integer = 200,
+                     domain  = "positive",
+                     parameters = list(mu    = "unbounded",
+                                       sigma = "positive")),
+
+  "chi_square" = list(integer = 201,
+                      domain  = "positive",
+                      parameters = list(nu = "positive")),
+
+  "inv_chi_square" = list(integer = 202,
+                          domain  = "positive",
+                          parameters = list(nu = "positive")),
+
+  "scaled_inv_chi_square" = list(integer = 203,
+                                 domain  = "positive",
+                                 parameters = list(nu    = "positive",
+                                                   sigma = "positive")),
+
+  "exponential" = list(integer    = 204,
+                       domain     = "positive",
+                       parameters = list(beta = "positive")),
+
+  "gamma" = list(integer = 205,
+                 domain  = "positive",
+                 parameters = list(alpha = "positive",
+                                   beta  = "positive")),
+
+  "inv_gamma" = list(integer = 206,
+                     domain  = "positive",
+                     parameters = list(alpha = "positive",
+                                       beta  = "positive")),
+
+  "weibull" = list(integer = 207,
+                   domain  = "positive",
+                   parameters = list(alpha = "positive",
+                                     sigma = "positive")),
+
+  "frechet" = list(integer = 208,
+                   domain  = "positive",
+                   parameters = list(alpha = "positive",
+                                     sigma = "positive")),
+
+  "rayleigh" = list(integer    = 300,
+                    domain     = "positive",
+                    parameters = list(sigma = "positive")),
+
+  "wiener" = list(integer    = 301,
+                  domain     = "positive",
+                  parameters = list(alpha = "positive",
+                                    tau   = "positive",
+                                    beta  = "unit",
+                                    sigma = "unbounded")),
+
+  "beta" = list(integer = 500,
+                domain  = "unit",
+                parameters = list(alpha = "positive",
+                                  beta  = "positive"))
 )

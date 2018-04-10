@@ -32,20 +32,6 @@ lplot = function(...) {
   do_call(plot, dots)
 }
 
-#' Jitters data away from 0 and 1.
-#'
-#' @param data Data to jitter. Contained in [0, 1].
-#' @param eps Epsilon to jitter with.
-#' @return Jittered data
-
-unit_jitter = function(data, eps = .Machine$double.eps^0.25) {
-  one_indices = (data == 1)
-  zero_indices = (data == 0)
-  data[one_indices] = 1 - runif(sum(one_indices), 0, eps)
-  data[zero_indices] = runif(sum(zero_indices), 0, eps)
-  data
-}
-
 #' Adds named elements to a list when they are not there already.
 #'
 #' @param input List. The input list to manipulate.
@@ -66,3 +52,25 @@ add_elements = function(input, ..., .eager = TRUE) {
   input
 }
 
+
+
+# is_formula = function(obj) inherits(obj, "formula")
+#
+# new_formula = function (rhs, lhs = NULL, env = parent.frame()) {
+#   if (!is.environment(env)) {
+#     stop("`env` must be an environment", call. = FALSE)
+#   }
+#   if (is.null(lhs)) {
+#     f <- call("~", rhs)
+#   }
+#   else {
+#     f <- call("~", lhs, rhs)
+#   }
+#   structure(f, class = "formula", .Environment = env)
+# }
+
+is_two_sided = function(formula) {
+  formula_str = paste(as.character(formula)[2], "~", as.character(formula)[3])
+  msg = paste0("The formula must be two-sided, got '", formula_str, "'.")
+  assertthat::assert_that(length(formula) == 3, msg = msg)
+}

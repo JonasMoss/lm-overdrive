@@ -43,6 +43,9 @@ formula_to_list = function(formula, type = "mean") {
   return_list[[paste0(type, "_link")]] =
     formula_to_link(formula, type = type)
 
+  return_list[[paste0(type, "_link_type")]] =
+    link_list[[formula_to_link(formula, type = type)]]$integer
+
   return_list[[paste0(type, "_formula")]] =
     rlang::new_formula(lhs = NULL, rhs = formula[[3]], env = env)
 
@@ -69,31 +72,30 @@ family_formula_to_list = function(formula) {
 
   env = environment(formula)
 
-  lhs = formula[[3]]
+  rhs = formula[[3]]
 
-  family = match.arg(deparse(lhs[[1]]), names(family_list))
+  family = match.arg(deparse(rhs[[1]]), names(family_list))
 
   arg_length = 2 + length(family_list[[family]]$extra_parameters)
-  msg = paste0("The length of the argument vector (arity: ", length(lhs) - 1,
+  msg = paste0("The length of the argument vector (arity: ", length(rhs) - 1,
                ") passed to '", family, "' does not match its true arity (",
                "arity: ", arg_length, "). Look at 'family_list' or the STAN",
                " documentation for details.")
-  assertthat::assert_that(arg_length == length(lhs) - 1, msg = msg)
+  assertthat::assert_that(arg_length == length(rhs) - 1, msg = msg)
 
   ## Now we handle the formula and link of the first argument.
 
-  mean_formula = as.formula(lhs[[2]], env = env)
-  sd_formula = as.formula(lhs[[3]], env = env)
+  mean_formula = as.formula(rhs[[2]], env = env)
+  sd_formula = as.formula(rhs[[3]], env = env)
 
-  ## Now we handle potential additional arguments.
-  # if(arg_length > 2) {
-  #   for(i in (3:arg_length)) {
-  #     current_formula = substituted[[i + 1]]
-  #   }
-  # }
+  # Now we handle potential additional arguments.
+  add_list = lapply(seq_len(arg_length - 2), function(i) {
+    rhs[[3 + i]]
+  })
 
   c(list(response = rlang::new_formula(rhs = 0, lhs = formula[[2]], env = env),
          family = family), formula_to_list(sd_formula, type = "sd"),
-                           formula_to_list(mean_formula, type = "mean"))
+                           formula_to_list(mean_formula, type = "mean"),
+    list(priors = add_list))
 }
 

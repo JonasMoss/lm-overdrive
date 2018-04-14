@@ -8,8 +8,7 @@
 #' specified environment.
 
 do_call = function(.fn, .args = NULL, ..., .env = parent.frame()) {
-  call_ = as.call(c(.fn, .args, alist2(...)))
-  eval(call_, envir = .env)
+  eval(as.call(c(.fn, .args, alist2(...))), envir = .env)
 }
 
 #' Make lazy list from arguments
@@ -27,8 +26,8 @@ alist2 = function(...) as.list(substitute((...)))[-1]
 lplot = function(...) {
   dots = alist2(...)
   if(is.null(dots$type)) dots$type = "l"
-  if(is.null(dots$bty)) dots$bty = "l"
-  if(is.null(dots$lwd)) dots$lwd = 1.5
+  if(is.null(dots$bty))  dots$bty = "l"
+  if(is.null(dots$lwd))  dots$lwd = 1.5
   do_call(plot, dots)
 }
 
@@ -41,13 +40,12 @@ lplot = function(...) {
 #' @return A modified list.
 
 add_elements = function(input, ..., .eager = TRUE) {
-  dots = if(.lazy) list2(...) else list(...)
+
+  dots = if(.lazy) alist2(...) else list(...)
   names = names(dots)
   N = length(names)
 
-  for(i in 1:N) {
-    if(is.null(input[[names[i]]])) input[[names[i]]] = dots[[i]]
-  }
+  for(i in 1:N) if(is.null(input[[names[i]]])) input[[names[i]]] = dots[[i]]
 
   input
 }

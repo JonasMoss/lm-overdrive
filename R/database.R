@@ -1,5 +1,8 @@
 # This is a database of supported priors, families, and links.
 
+
+MP = 6 # Maximal number of parameters in a distribution. A constant.
+
 family_list = list(
   normal = list(integer = 1,
                 domain  = "unbounded",
@@ -197,3 +200,50 @@ prior_list = list(
                 parameters = list(alpha = "positive",
                                   beta  = "positive"))
 )
+
+
+link_list2 = list(
+  inverse = list(
+    integer = 2,
+    keys    = list(quote(inverse), quote(`/`)),
+    domain  = "unbounded"),
+
+  inverse_squared = list(
+    integer = 3,
+    keys    = list(quote(inverse_squared)),
+    domain  = "positive"),
+
+  identity = list(
+    integer = 1,
+    keys    = list(quote(identity)),
+    domain  = "unbounded"),
+
+  log = list(
+    integer = 4,
+    keys    = list(quote(log)),
+    domain  = "positive"),
+
+  sqrt = list(
+    integer = 5,
+    keys    = list(quote(sqrt)),
+    domain  = "positive"),
+
+  probit = list(
+    integer = 6,
+    keys    = list(quote(probit)),
+    domain  = "unit"),
+
+  cloglog = list(
+    integer = 7,
+    keys    = list(quote(cloglog)),
+    domain  = "positive"),
+
+  logit = list(
+    integer = 8,
+    keys    = list(quote(logit)),
+    domain  = "positive"),
+
+  cauchit = list(
+    integer = 9,
+    keys    = list(quote(cauchit)),
+    domain  = "positive"))

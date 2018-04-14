@@ -1,0 +1,181 @@
+#' Convert a collection of formulas to a model matrix and a matrix of indices.
+#'
+#' @param formulas A list of formulas.
+#' @return A list containing a model matrix and a matrix of indices.
+
+model_matrix = function(formulas, priors, data = NULL) {
+
+  terms = lapply(formulas, formula_labels)
+
+  uniques = unique(unlist(terms))
+
+  if("(Intercept)" %in% uniques) {
+    uniques = setdiff(uniques, "(Intercept)")
+  } else {
+    uniques = c("0", uniques)
+  }
+
+  formula_str = paste("~", do.call(paste, as.list(c(sep = " + ", uniques))))
+
+  model = model.matrix(as.formula(formula_str), data)
+  index_matrix = matrix(0, nrow = length(terms), ncol = ncol(model))
+
+  for(i in 1:length(terms)) {
+    index_matrix[i, match(terms[[i]], colnames(model))] = 1
+  }
+
+  colnames(index_matrix) = colnames(model)
+
+  domains = lapply(priors, function(prior) prior_massage(prior)$prior_domain)
+  Q = ncol(index_matrix)
+  P = nrow(index_matrix)
+
+  unbounded_indices = array(data = 0, dim = dim(index_matrix))
+  positive_indices  = array(data = 0, dim = dim(index_matrix))
+  unit_indices      = array(data = 0, dim = dim(index_matrix))
+
+  for(i in 1:length(domains)) {
+    unbounded_names = names(domains[[i]][domains[[i]] == "unbounded"])
+    unbounded_indices[i, match(unbounded_names, colnames(index_matrix))] =
+      index_matrix[i, match(unbounded_names, colnames(index_matrix))]
+
+    positive_names = names(domains[[i]][domains[[i]] == "positive"])
+    positive_indices[i, match(positive_names, colnames(index_matrix))] =
+      index_matrix[i, match(positive_names, colnames(index_matrix))]
+
+    unit_names = names(domains[[i]][domains[[i]] == "unit"])
+    unit_indices[i, match(unit_names, colnames(index_matrix))] =
+      index_matrix[i, match(unit_names, colnames(index_matrix))]
+  }
+
+  colnames(unbounded_indices) = colnames(model)
+  colnames(positive_indices)  = colnames(model)
+  colnames(unit_indices)      = colnames(model)
+
+  list(X                 = model,
+       unbounded_indices = unbounded_indices,
+       positive_indices = positive_indices,
+       unit_indices      = unit_indices)
+
+}
+
+formulas = list(mean ~ disp + wt,
+                1/sd^2 ~ cyl,
+                alpha ~ 0 + disp + cyl)
+
+model_matrix(formulas, data = mtcars)
+
+#' Get term labels from a formula, intercept included.
+#'
+
+formula_labels = function(formula) {
+
+  labels = attr(terms(formula), "term.labels")
+
+  if(attr(terms(formula), "intercept") == 1) c("(Intercept)", labels)
+  else labels
+
+}
+
+
+#' Convert a family formula
+#'
+#' Convert a family formula into a list containing the response, the
+#' formula and link for the mean and standard deviation, and the prior for
+#' the additional parameter(s). [Not implemented yet.]
+#'
+#' @param formula A formula object.
+#' @return A list.
+
+family_formula_to_list2 = function(formula) {
+  rhs = formula[[3]]
+  family = family_list[[deparse(rhs[[1]])]]$integer
+  links = lapply(rhs[2:length(rhs)], formula_to_link)
+  link_types      = sapply(links, function(elem) elem$link)
+  link_parameters = sapply(links, function(elem) elem$var)
+
+  env = environment(formula)
+
+  rhs_list = lapply(as.list(rhs[2:length(rhs)]), as.formula, env = env)
+
+  list(response        = as.formula(paste0("~", deparse(formula[[2]])), env = env),
+       family          = family,
+       link_types      = link_types,
+       link_parameters = link_parameters,
+       rhs_list        = rhs_list)
+}
+
+#' Convert a link-formula to a list.
+#'
+#' @param formula
+#' @return List.
+
+link_formula_to_list = function(formula) {
+  rhs = formula[[3]]
+  lhs = formula[[2]]
+}
+
+formula_to_link = function(formula) {
+  lhs = formula[[2]]
+
+  if(length(lhs) == 1) {
+    fun  = quote(identity)
+    var  = deparse(lhs)
+  } else if (length(lhs) == 2) {
+    fun  = lhs[[1]]
+    var  = deparse(lhs[[2]])
+  } else if (length(lhs) == 3) {
+    fun  = lhs[[1]]
+    var  = deparse(lhs[[3]])
+  }
+
+  link = -Inf
+
+  for (elem in link_list2) {
+    if(any(unlist(lapply(elem$keys, function(key) fun == key)))) {
+      link = elem$integer
+      break
+    }
+  }
+
+  assertthat::assert_that(link != -Inf, msg = "Can't recognize link.")
+  list(link = link, var = var, fun = fun)
+
+}
+
+
+indices_to_domain_indices = function(indices, priors) {
+
+  domains = lapply(priors, function(prior) prior_massage(prior)$prior_domain)
+  Q = ncol(indices)
+  P = nrow(indices)
+
+  unbounded_indices = array(data = 0, dim = dim(indices))
+  positive_indices  = array(data = 0, dim = dim(indices))
+  unit_indices      = array(data = 0, dim = dim(indices))
+
+  for(i in 1:length(domains)) {
+    unbounded_names = names(domains[[i]][domains[[i]] == "unbounded"])
+    unbounded_indices[i, match(unbounded_names, colnames(indices))] =
+    indices[i, match(unbounded_names, colnames(indices))]
+
+    positive_names = names(domains[[i]][domains[[i]] == "positive"])
+    positive_indices[i, match(positive_names, colnames(indices))] =
+      indices[i, match(positive_names, colnames(indices))]
+
+    unit_names = names(domains[[i]][domains[[i]] == "unit"])
+    unit_indices[i, match(unit_names, colnames(indices))] =
+      indices[i, match(unit_names, colnames(indices))]
+  }
+
+  list(unbounded_indices = unbounded_indices,
+       positive_indicies = positive_indices,
+       unit_indices      = unit_indices)
+}
+
+
+
+formula = 1/p ~ disp + mpg + I(cyl^2)
+
+formula = g(p) ~ disp + mpg + I(cyl^2)
+formula = p ~ disp + mpg + I(cyl^2)

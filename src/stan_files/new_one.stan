@@ -31,21 +31,29 @@ data {
 }
 
 parameters {
-  real                       beta_unbounded[Q, max(no_unbounded)];
-  real<lower = 0>            beta_positive[Q, max(no_positive)];
-  real<lower = 0, upper = 1> beta_unit[Q, max(no_unit)];
+  real                       beta_unbounded[sum(no_unbounded)];
+  real<lower = 0>            beta_positive[sum(no_positive)];
+  real<lower = 0, upper = 1> beta_unit[sum(no_unit)];
 }
 
 model {
   // Array of transformed parameters.
+  real params[N, Q];
+
   int unbounded_index = 1;
   int positive_index = 1;
   int unit_index = 1;
-  real params[N, Q];
+
+  int unbounded_beta_index = 1;
+  int positive_beta_index = 1;
+  int unit_beta_index = 1;
 
   for(n in 1:N) {
     for(q in 1:Q) params[n, q] = 0;
   }
+
+
+
 
   for(q in 1:Q) {
     // Handling of unbounded priors.
@@ -53,159 +61,159 @@ model {
       for(p in 1:no_unbounded[q]) {
         if (unbounded_prior_types[q, p] == 100) {
 
-          beta_unbounded[q, p] ~ normal(unbounded_prior[p, 1, q],
+          beta_unbounded[unbounded_beta_index] ~ normal(unbounded_prior[p, 1, q],
                                         unbounded_prior[p, 2, q]);
 
         } else if (unbounded_prior_types[q, p] == 101) {
 
-          beta_unbounded[q, p] ~ exp_mod_normal(unbounded_prior[p, 1, q],
+          beta_unbounded[unbounded_beta_index] ~ exp_mod_normal(unbounded_prior[p, 1, q],
                                                unbounded_prior[p, 2, q],
                                                unbounded_prior[p, 3, q]);
 
         } else if (unbounded_prior_types[q, p] == 102) {
 
-          beta_unbounded[q, p] ~ skew_normal(unbounded_prior[p, 1, q],
+          beta_unbounded[unbounded_beta_index] ~ skew_normal(unbounded_prior[p, 1, q],
                                             unbounded_prior[p, 2, q],
                                             unbounded_prior[p, 3, q]);
 
         } else if (unbounded_prior_types[q, p] == 103) {
 
-          beta_unbounded[q, p] ~ student_t(unbounded_prior[p, 1, q],
+          beta_unbounded[unbounded_beta_index] ~ student_t(unbounded_prior[p, 1, q],
                                           unbounded_prior[p, 2, q],
                                           unbounded_prior[p, 3, q]);
 
         } else if (unbounded_prior_types[q, p] == 104) {
 
-          beta_unbounded[q, p] ~ cauchy(unbounded_prior[p, 1, q],
+          beta_unbounded[unbounded_beta_index] ~ cauchy(unbounded_prior[p, 1, q],
                                        unbounded_prior[p, 2, q]);
 
         } else if (unbounded_prior_types[q, p] == 105) {
 
-          beta_unbounded[q, p] ~ double_exponential(unbounded_prior[p, 1, q],
+          beta_unbounded[unbounded_beta_index] ~ double_exponential(unbounded_prior[p, 1, q],
                                                    unbounded_prior[p, 2, q]);
 
         } else if (unbounded_prior_types[q, p] == 106) {
 
-          beta_unbounded[q, p] ~ logistic(unbounded_prior[p, 1, q],
+          beta_unbounded[unbounded_beta_index] ~ logistic(unbounded_prior[p, 1, q],
                                          unbounded_prior[p, 2, q]);
 
         } else if (unbounded_prior_types[q, p] == 107) {
 
-          beta_unbounded[q, p] ~ gumbel(unbounded_prior[p, 1, q],
+          beta_unbounded[unbounded_beta_index] ~ gumbel(unbounded_prior[p, 1, q],
                                        unbounded_prior[p, 2, q]);
 
         }
       }
+      unbounded_beta_index += 1;
     }
 
     if(no_positive[q] > 0) {
       for(p in 1:no_positive[q]) {
         if (positive_prior_types[q, p] == 200) {
 
-          beta_positive[q, p] ~ lognormal(positive_prior[p, 1, q],
+          beta_positive[positive_beta_index] ~ lognormal(positive_prior[p, 1, q],
                                           positive_prior[p, 2, q]);
 
         } else if (positive_prior_types[q, p] == 201) {
 
-          beta_positive[q, p] ~ chi_square(positive_prior[p, 1, q]);
+          beta_positive[positive_beta_index] ~ chi_square(positive_prior[p, 1, q]);
 
         } else if (positive_prior_types[q, p] == 202) {
 
-          beta_positive[q, p] ~ inv_chi_square(positive_prior[p, 1, q]);
+          beta_positive[positive_beta_index] ~ inv_chi_square(positive_prior[p, 1, q]);
 
         } else if (positive_prior_types[q, p] == 203) {
 
-          beta_positive[q, p] ~ scaled_inv_chi_square(positive_prior[p, 1, q],
+          beta_positive[positive_beta_index] ~ scaled_inv_chi_square(positive_prior[p, 1, q],
                                                       positive_prior[p, 2, q]);
 
         } else if (positive_prior_types[q, p] == 204) {
 
-          beta_positive[q, p] ~ exponential(positive_prior[p, 1, q]);
+          beta_positive[positive_beta_index] ~ exponential(positive_prior[p, 1, q]);
 
         } else if (positive_prior_types[q, p] == 205) {
 
-          beta_positive[q, p] ~ gamma(positive_prior[p, 1, q],
+          beta_positive[positive_beta_index] ~ gamma(positive_prior[p, 1, q],
                                       positive_prior[p, 2, q]);
 
         } else if (positive_prior_types[q, p] == 206) {
 
-          beta_positive[q, p] ~ inv_gamma(positive_prior[p, 1, q],
+          beta_positive[positive_beta_index] ~ inv_gamma(positive_prior[p, 1, q],
                                           positive_prior[p, 2, q]);
 
         } else if (positive_prior_types[q, p] == 207) {
 
-          beta_positive[q, p] ~ weibull(positive_prior[p, 1, q],
+          beta_positive[positive_beta_index] ~ weibull(positive_prior[p, 1, q],
                                         positive_prior[p, 2, q]);
 
         } else if (positive_prior_types[q, p] == 208) {
 
-          beta_positive[q, p] ~ frechet(positive_prior[p, 1, q],
+          beta_positive[positive_beta_index] ~ frechet(positive_prior[p, 1, q],
                                         positive_prior[p, 2, q]);
 
         } else if (positive_prior_types[q, p] == 300) {
 
-          beta_positive[q, p] ~ rayleigh(positive_prior[p, 1, q]);
+          beta_positive[positive_beta_index] ~ rayleigh(positive_prior[p, 1, q]);
 
         } else if (positive_prior_types[q, p] == 301) {
 
-          beta_positive[q, p] ~ wiener(positive_prior[p, 1, q],
+          beta_positive[positive_beta_index] ~ wiener(positive_prior[p, 1, q],
                                        positive_prior[p, 2, q],
                                        positive_prior[p, 3, q],
                                        positive_prior[p, 4, q]);
 
         } else if (positive_prior_types[q, p] == 400) {
 
-          beta_positive[q, p] ~ pareto(positive_prior[p, 1, q],
+          beta_positive[positive_beta_index] ~ pareto(positive_prior[p, 1, q],
                                        positive_prior[p, 2, q]);
 
         } else if (positive_prior_types[q, p] == 401) {
 
-          beta_positive[q, p] ~ pareto_type_2(positive_prior[p, 1, q],
+          beta_positive[positive_beta_index] ~ pareto_type_2(positive_prior[p, 1, q],
                                               positive_prior[p, 2, q],
                                               positive_prior[p, 3, q]);
         }
       }
+      positive_beta_index += 1;
     }
 
     if(no_unit[q] > 0) {
       for(p in 1:no_unit[q]) {
         if (positive_prior_types[q, p] == 500) {
-           beta_positive[q, p] ~ beta(unit_prior[p, 1, q],
+           beta_positive[unit_beta_index] ~ beta(unit_prior[p, 1, q],
                                       unit_prior[p, 2, q]);
         }
       }
+      unit_beta_index += 1;
     }
 
-    unbounded_index = 1;
     if(no_unbounded[q] > 0) {
       for(p in 1:P) {
         if(unbounded_indices[q, p] == 1) {
           for(n in 1:N) {
-            params[n, q] = params[n, q] + X[n, p] * beta_unbounded[q, unbounded_index];
+            params[n, q] = params[n, q] + X[n, p] * beta_unbounded[unbounded_index];
           }
           unbounded_index += 1;
         }
       }
     }
 
-    positive_index = 1;
     if(no_positive[q] > 0) {
       for(p in 1:P) {
         if(positive_indices[q, p] == 1) {
           for(n in 1:N) {
-            params[n, q] = params[n, q] + X[n, p] * beta_positive[q, positive_index];
+            params[n, q] = params[n, q] + X[n, p] * beta_positive[positive_index];
           }
           positive_index += 1;
         }
       }
     }
 
-    unit_index = 1;
     if(no_unit[q] > 0) {
       for(p in 1:P) {
         if(unit_indices[q, p] == 1) {
           for(n in 1:N) {
-            params[n, q] = params[n, q] + X[n, p] * beta_unit[q, unit_index];
+            params[n, q] = params[n, q] + X[n, p] * beta_unit[unit_index];
           }
           unit_index += 1;
         }
@@ -238,8 +246,8 @@ model {
 
     for(n in 1:N) {
       // Gumbel distribution.
-      real sd_ = params[n, 2];
       real mean_ = params[n, 1];
+      real sd_   = params[n, 2];
       real euler_mascheroni = 0.577215664901532;
       real beta = 1/pi()*sqrt(6)*sd_;
       real mu = mean_ - beta*euler_mascheroni;
@@ -260,8 +268,19 @@ model {
 
       Y[n] ~ skew_normal(xi, omega, alpha);
     }
+  } else if (family == 4) {
+    for(n in 1:N) {
+      // Gamma
+      real mean_ = params[n, 1];
+      real var_   = params[n, 2]^2;
 
+      real alpha = mean_^2/var_;
+      real beta = mean_/var_;
+
+      Y[n] ~ gamma(alpha, beta);
+    }
   }
+
 
 }
 

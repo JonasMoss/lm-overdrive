@@ -8,16 +8,11 @@ new_one = rstan::stan_model(file       = "src/stan_files/new_one.stan",
 #'
 #' @param formula The formula.
 #' @param data The data.
-#' @param p_formula Formula for p.
-#' @param mean_priors List of formulas. Priors for the coefficients for
-#' \code{mean}.
-#' @param sd_priors List of formulas. Priors for the coefficients for
-#' \code{sd}.
-#' @param p_priors List of formulas. Priors for the coefficients for
+#' @param priors List of formulas. Priors for the coefficients for
 #' \code{p}.
 #' @return A \code{STAN} object.
 
-new_stanlm = function(formula, data, priors = NULL) {
+new_stanlm = function(formula, data, priors = NULL, ...) {
 
   if(missing(data)) data = NULL
   model = family_formula_to_list2(formula)
@@ -55,7 +50,7 @@ new_stanlm = function(formula, data, priors = NULL) {
   sdata$unit_prior_types = priors_massage$unit_prior_types
 
   # Done with data insertion, time for sampling!
-  stan_fit = do_call(rstan::sampling,
+  stan_fit = do_call(rstan::sampling, .args = alist2(...),
                      object = new_one,
                      data   = sdata)
   stan_fit
@@ -72,7 +67,39 @@ priors = list(mean = list((Intercept) ~ normal(0, 1),
                           hp ~ normal(0, 1)),
               sd = list((Intercept) ~ gamma(1, 1)),
               alpha = list((Intercept) ~ normal(0, 1),
-                           cyl ~ skew_normal(1, 1, 1)))
+                           cyl ~ normal(0, 1)))
+
+
+formula = mpg ~ skew_normal(mean ~ disp + wt + cyl + hp, sd ~ 1, alpha ~ 1)
+priors = list(mean = list((Intercept) ~ normal(0, 1),
+                          disp ~ normal(0, 1),
+                          wt ~ normal(0, 1),
+                          cyl ~ normal(0, 1),
+                          hp ~ normal(0, 1)),
+              sd = list((Intercept) ~ gamma(1, 1)),
+              alpha = list((Intercept) ~ beta(1, 1)))
 
 lm(mpg ~ disp + wt + cyl + hp, data = data)
-new_stanlm(formula, priors = priors, data = data)
+new_stanlm(formula, priors = priors, data = data, chains = 1) -> mod
+
+formula = mpg ~ gumbel(mean ~ disp + wt + cyl + hp, sd ~ 1)
+priors = list(mean = list((Intercept) ~ normal(0, 1),
+                          disp ~ normal(0, 1),
+                          wt ~ normal(0, 1),
+                          cyl ~ normal(0, 1),
+                          hp ~ normal(0, 1)),
+              sd = list((Intercept) ~ gamma(1, 1)))
+
+lm(mpg ~ disp + wt + cyl + hp, data = data)
+new_stanlm(formula, priors = priors, data = data) -> mod_gumbel
+
+formula = mpg ~ normal(mean ~ disp + wt + cyl + hp, sd ~ 1)
+priors = list(mean = list((Intercept) ~ normal(0, 1),
+                          disp ~ normal(0, 1),
+                          wt ~ normal(0, 1),
+                          cyl ~ normal(0, 1),
+                          hp ~ normal(0, 1)),
+              sd = list((Intercept) ~ gamma(1, 1)))
+
+lm(mpg ~ disp + wt + cyl + hp, data = data)
+new_stanlm(formula, priors = priors, data = data) -> mod_normal

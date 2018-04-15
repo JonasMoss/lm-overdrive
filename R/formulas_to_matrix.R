@@ -15,6 +15,7 @@ model_matrix = function(formulas, priors, data = NULL) {
     uniques = c("0", uniques)
   }
 
+  if(length(uniques) == 0) uniques = c(1)
   formula_str = paste("~", do.call(paste, as.list(c(sep = " + ", uniques))))
 
   model = model.matrix(as.formula(formula_str), data)

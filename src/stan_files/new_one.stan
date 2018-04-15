@@ -1,3 +1,9 @@
+functions {
+#include /functions/beta_priors.stan
+#include /functions/parameters_array.stan
+#include /functions/likelihood.stan
+}
+
 data {
   int<lower = 0> MAX_PAR; // Maximal number of parameters.
   int<lower = 0> N;       // Number of observations.
@@ -37,293 +43,23 @@ parameters {
 }
 
 model {
-  // Array of transformed parameters.
-  real params[N, Q];
+  // Array of transformed parameters. Here the 'params' array is constructed
+  // and the link transformations are carried out. The params array is used
+  // in the likelihood. 'params' should be thought of as g^(-1)('beta %*% X')
+  // for all the different links and betas, and associated Xs.
 
-  int unbounded_index = 1;
-  int positive_index = 1;
-  int unit_index = 1;
+  real params[N, Q] = get_parameters(N, Q, P,
+                        no_unbounded, no_positive, no_unit,
+                        beta_unbounded, beta_positive, beta_unit,
+                        unbounded_indices, positive_indices, unit_indices,
+                        X, link_types);
 
-  int unbounded_beta_index = 1;
-  int positive_beta_index = 1;
-  int unit_beta_index = 1;
-
-  for(n in 1:N) {
-    for(q in 1:Q) params[n, q] = 0;
-  }
-
-
-
-
-  for(q in 1:Q) {
-    // Handling of unbounded priors.
-    if(no_unbounded[q] > 0){
-      for(p in 1:no_unbounded[q]) {
-        if (unbounded_prior_types[q, p] == 100) {
-
-          beta_unbounded[unbounded_beta_index] ~ normal(unbounded_prior[p, 1, q],
-                                        unbounded_prior[p, 2, q]);
-
-        } else if (unbounded_prior_types[q, p] == 101) {
-
-          beta_unbounded[unbounded_beta_index] ~ exp_mod_normal(unbounded_prior[p, 1, q],
-                                               unbounded_prior[p, 2, q],
-                                               unbounded_prior[p, 3, q]);
-
-        } else if (unbounded_prior_types[q, p] == 102) {
-
-          beta_unbounded[unbounded_beta_index] ~ skew_normal(unbounded_prior[p, 1, q],
-                                            unbounded_prior[p, 2, q],
-                                            unbounded_prior[p, 3, q]);
-
-        } else if (unbounded_prior_types[q, p] == 103) {
-
-          beta_unbounded[unbounded_beta_index] ~ student_t(unbounded_prior[p, 1, q],
-                                          unbounded_prior[p, 2, q],
-                                          unbounded_prior[p, 3, q]);
-
-        } else if (unbounded_prior_types[q, p] == 104) {
-
-          beta_unbounded[unbounded_beta_index] ~ cauchy(unbounded_prior[p, 1, q],
-                                       unbounded_prior[p, 2, q]);
-
-        } else if (unbounded_prior_types[q, p] == 105) {
-
-          beta_unbounded[unbounded_beta_index] ~ double_exponential(unbounded_prior[p, 1, q],
-                                                   unbounded_prior[p, 2, q]);
-
-        } else if (unbounded_prior_types[q, p] == 106) {
-
-          beta_unbounded[unbounded_beta_index] ~ logistic(unbounded_prior[p, 1, q],
-                                         unbounded_prior[p, 2, q]);
-
-        } else if (unbounded_prior_types[q, p] == 107) {
-
-          beta_unbounded[unbounded_beta_index] ~ gumbel(unbounded_prior[p, 1, q],
-                                       unbounded_prior[p, 2, q]);
-
-        }
-      }
-      unbounded_beta_index += 1;
-    }
-
-    if(no_positive[q] > 0) {
-      for(p in 1:no_positive[q]) {
-        if (positive_prior_types[q, p] == 200) {
-
-          beta_positive[positive_beta_index] ~ lognormal(positive_prior[p, 1, q],
-                                          positive_prior[p, 2, q]);
-
-        } else if (positive_prior_types[q, p] == 201) {
-
-          beta_positive[positive_beta_index] ~ chi_square(positive_prior[p, 1, q]);
-
-        } else if (positive_prior_types[q, p] == 202) {
-
-          beta_positive[positive_beta_index] ~ inv_chi_square(positive_prior[p, 1, q]);
-
-        } else if (positive_prior_types[q, p] == 203) {
-
-          beta_positive[positive_beta_index] ~ scaled_inv_chi_square(positive_prior[p, 1, q],
-                                                      positive_prior[p, 2, q]);
-
-        } else if (positive_prior_types[q, p] == 204) {
-
-          beta_positive[positive_beta_index] ~ exponential(positive_prior[p, 1, q]);
-
-        } else if (positive_prior_types[q, p] == 205) {
-
-          beta_positive[positive_beta_index] ~ gamma(positive_prior[p, 1, q],
-                                      positive_prior[p, 2, q]);
-
-        } else if (positive_prior_types[q, p] == 206) {
-
-          beta_positive[positive_beta_index] ~ inv_gamma(positive_prior[p, 1, q],
-                                          positive_prior[p, 2, q]);
-
-        } else if (positive_prior_types[q, p] == 207) {
-
-          beta_positive[positive_beta_index] ~ weibull(positive_prior[p, 1, q],
-                                        positive_prior[p, 2, q]);
-
-        } else if (positive_prior_types[q, p] == 208) {
-
-          beta_positive[positive_beta_index] ~ frechet(positive_prior[p, 1, q],
-                                        positive_prior[p, 2, q]);
-
-        } else if (positive_prior_types[q, p] == 300) {
-
-          beta_positive[positive_beta_index] ~ rayleigh(positive_prior[p, 1, q]);
-
-        } else if (positive_prior_types[q, p] == 301) {
-
-          beta_positive[positive_beta_index] ~ wiener(positive_prior[p, 1, q],
-                                       positive_prior[p, 2, q],
-                                       positive_prior[p, 3, q],
-                                       positive_prior[p, 4, q]);
-
-        } else if (positive_prior_types[q, p] == 400) {
-
-          beta_positive[positive_beta_index] ~ pareto(positive_prior[p, 1, q],
-                                       positive_prior[p, 2, q]);
-
-        } else if (positive_prior_types[q, p] == 401) {
-
-          beta_positive[positive_beta_index] ~ pareto_type_2(positive_prior[p, 1, q],
-                                              positive_prior[p, 2, q],
-                                              positive_prior[p, 3, q]);
-        }
-      }
-      positive_beta_index += 1;
-    }
-
-    if(no_unit[q] > 0) {
-      for(p in 1:no_unit[q]) {
-        if (positive_prior_types[q, p] == 500) {
-           beta_positive[unit_beta_index] ~ beta(unit_prior[p, 1, q],
-                                      unit_prior[p, 2, q]);
-        }
-      }
-      unit_beta_index += 1;
-    }
-
-    if(no_unbounded[q] > 0) {
-      for(p in 1:P) {
-        if(unbounded_indices[q, p] == 1) {
-          for(n in 1:N) {
-            params[n, q] = params[n, q] + X[n, p] * beta_unbounded[unbounded_index];
-          }
-          unbounded_index += 1;
-        }
-      }
-    }
-
-    if(no_positive[q] > 0) {
-      for(p in 1:P) {
-        if(positive_indices[q, p] == 1) {
-          for(n in 1:N) {
-            params[n, q] = params[n, q] + X[n, p] * beta_positive[positive_index];
-          }
-          positive_index += 1;
-        }
-      }
-    }
-
-    if(no_unit[q] > 0) {
-      for(p in 1:P) {
-        if(unit_indices[q, p] == 1) {
-          for(n in 1:N) {
-            params[n, q] = params[n, q] + X[n, p] * beta_unit[unit_index];
-          }
-          unit_index += 1;
-        }
-      }
-    }
-
-    // Handling of links.
-    if(link_types[q] == 2) {
-      for(n in 1:N) params[n, q] = 1/params[n, q];
-    } else if (link_types[q] == 3) {
-      for(n in 1:N) params[n, q] = 1/sqrt(params[n, q]);
-    } else if (link_types[q] == 4) {
-      for(n in 1:N) params[n, q] = exp(params[n, q]);
-    } else if (link_types[q] == 5) {
-      for(n in 1:N) params[n, q] = params[n, q]^2;
-    }
-
-  }
+  // Here we handle the prior distributions of the betas.
+  beta_unbounded  ~ unbounded(Q, no_unbounded, unbounded_prior_types, unbounded_prior);
+  beta_positive   ~ positive(Q, no_positive, positive_prior_types, positive_prior);
+  beta_unit       ~ unit(Q, no_unit, unit_prior_types, unit_prior);
 
   // Now for the likelihood:
 
-  if(family == 1) {
-
-    // Normal distribution.
-    for(n in 1:N) {
-      Y[n] ~ normal(params[n, 1], params[n, 2]);
-    }
-
-  } else if (family == 2) {
-
-    for(n in 1:N) {
-      // Gumbel distribution.
-      real mean_ = params[n, 1];
-      real sd_   = params[n, 2];
-      real euler_mascheroni = 0.577215664901532;
-      real beta = 1/pi()*sqrt(6)*sd_;
-      real mu = mean_ - beta*euler_mascheroni;
-      Y[n] ~ gumbel(mu, beta);
-    }
-
-
-  } else if (family == 3) {
-    for(n in 1:N) {
-      // Skew normal.
-      real mean_ = params[n, 1];
-      real sd_   = params[n, 2];
-      real alpha = params[n, 3];
-
-      real delta = alpha/sqrt(1 + alpha^2);
-      real omega = sd_/sqrt(1 - delta^2*2/pi());
-      real xi = mean_ - omega*(delta*sqrt(2/pi()));
-
-      Y[n] ~ skew_normal(xi, omega, alpha);
-    }
-  } else if (family == 4) {
-    for(n in 1:N) {
-      // Gamma
-      real mean_ = params[n, 1];
-      real var_   = params[n, 2]^2;
-
-      real alpha = mean_^2/var_;
-      real beta = mean_/var_;
-
-      Y[n] ~ gamma(alpha, beta);
-    }
-  }
-
-
+  Y ~ likelihood(family, N, params);
 }
-
-//
-// // Log-priors for coefficients. Runs
-//
-// void model_lp(int index, vector beta, real[,] prior_parameters) {
-//   // Ad all ifs etc here.
-//   target += student_t_cdf(beta[i] | prior_parameters[i, 1],
-//                                     prior_parameters[i, 3]);
-// }
-//
-//
-// if(p_mean_unbounded > 0) {
-//   for(index in 1:p_mean_unbounded) {
-//     model_lp(index, beta_mean_unbounded, prior_mean_unbounded)
-//   }
-// }
-//
-//
-// void bounded_lp(
-// void unit_lp(
-//
-//
-//
-//
-//
-//   /**
-// 24   * Log-prior for baseline hazard parameters
-// 25   *
-// 26   * @param aux_unscaled Vector (potentially of length 1) of unscaled
-// 27   *   auxiliary parameter(s)
-// 28   * @param dist Integer specifying the type of prior distribution
-// 29   * @param scale Real specifying the scale for the prior distribution
-// 30   * @param df Real specifying the df for the prior distribution
-// 31   * @return nothing
-// 32   */
-// 33   void basehaz_lp(vector aux_unscaled, int dist, vector scale, vector df) {
-// 34     if (dist > 0) {
-// 35       if (dist == 1)
-// 36         target += normal_lpdf(aux_unscaled | 0, 1);
-// 37       else if (dist == 2)
-// 38         target += student_t_lpdf(aux_unscaled | df, 0, 1);
-// 39       else
-// 40         target += exponential_lpdf(aux_unscaled | 1);
-// 41     }

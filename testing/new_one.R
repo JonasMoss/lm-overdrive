@@ -59,40 +59,6 @@ new_stanlm = function(formula, data, priors = NULL, ...) {
 data = as.data.frame(scale(mtcars))
 
 
-formula = mpg ~ normal(mean ~ disp + wt + cyl + hp, sd ~ 1, alpha ~ cyl)
-priors = list(mean = list((Intercept) ~ normal(0, 1),
-                          disp ~ normal(0, 1),
-                          wt ~ normal(0, 1),
-                          cyl ~ normal(0, 1),
-                          hp ~ normal(0, 1)),
-              sd = list((Intercept) ~ gamma(1, 1)),
-              alpha = list((Intercept) ~ normal(0, 1),
-                           cyl ~ normal(0, 1)))
-
-
-formula = mpg ~ skew_normal(mean ~ disp + wt + cyl + hp, sd ~ 1, alpha ~ 1)
-priors = list(mean = list((Intercept) ~ normal(0, 1),
-                          disp ~ normal(0, 1),
-                          wt ~ normal(0, 1),
-                          cyl ~ normal(0, 1),
-                          hp ~ normal(0, 1)),
-              sd = list((Intercept) ~ gamma(1, 1)),
-              alpha = list((Intercept) ~ beta(1, 1)))
-
-lm(mpg ~ disp + wt + cyl + hp, data = data)
-new_stanlm(formula, priors = priors, data = data, chains = 1) -> mod
-
-formula = mpg ~ gumbel(mean ~ disp + wt + cyl + hp, sd ~ 1)
-priors = list(mean = list((Intercept) ~ normal(0, 1),
-                          disp ~ normal(0, 1),
-                          wt ~ normal(0, 1),
-                          cyl ~ normal(0, 1),
-                          hp ~ normal(0, 1)),
-              sd = list((Intercept) ~ gamma(1, 1)))
-
-lm(mpg ~ disp + wt + cyl + hp, data = data)
-new_stanlm(formula, priors = priors, data = data) -> mod_gumbel
-
 formula = mpg ~ normal(mean ~ disp + wt + cyl + hp, sd ~ 1)
 priors = list(mean = list((Intercept) ~ normal(0, 1),
                           disp ~ normal(0, 1),
@@ -101,5 +67,60 @@ priors = list(mean = list((Intercept) ~ normal(0, 1),
                           hp ~ normal(0, 1)),
               sd = list((Intercept) ~ gamma(1, 1)))
 
+new_stanlm(formula, priors = priors, data = data, chains = 1)
 lm(mpg ~ disp + wt + cyl + hp, data = data)
-new_stanlm(formula, priors = priors, data = data) -> mod_normal
+#
+# formula = mpg ~ skew_normal(mean ~ disp + wt + cyl + hp, sd ~ 1, alpha ~ 1)
+# priors = list(mean = list((Intercept) ~ normal(0, 1),
+#                           disp ~ normal(0, 1),
+#                           wt ~ normal(0, 1),
+#                           cyl ~ normal(0, 1),
+#                           hp ~ normal(0, 1)),
+#               sd = list((Intercept) ~ gamma(1, 1)),
+#               alpha = list((Intercept) ~ beta(1, 1)))
+#
+# lm(mpg ~ disp + wt + cyl + hp, data = data)
+# new_stanlm(formula, priors = priors, data = data, chains = 1) -> mod
+#
+# formula = mpg ~ gumbel(mean ~ disp + wt + cyl + hp, sd ~ 1)
+# priors = list(mean = list((Intercept) ~ normal(0, 1),
+#                           disp ~ normal(0, 1),
+#                           wt ~ normal(0, 1),
+#                           cyl ~ normal(0, 1),
+#                           hp ~ normal(0, 1)),
+#               sd = list((Intercept) ~ gamma(1, 1)))
+#
+# lm(mpg ~ disp + wt + cyl + hp, data = data)
+# new_stanlm(formula, priors = priors, data = data) -> mod_gumbel
+#
+# formula = mpg ~ normal(mean ~ disp + wt + cyl + hp, sd ~ 1)
+# priors = list(mean = list((Intercept) ~ normal(0, 1),
+#                           disp ~ normal(0, 1),
+#                           wt ~ normal(0, 1),
+#                           cyl ~ normal(0, 1),
+#                           hp ~ normal(0, 1)),
+#               sd = list((Intercept) ~ gamma(1, 1)))
+#
+# lm(mpg ~ disp + wt + cyl + hp, data = data)
+# new_stanlm(formula, priors = priors, data = data) -> mod_normal
+#
+N = 100
+x1 = rexp(N, 10)
+x2 = rexp(N, 10)
+x3 = rexp(N, 10)
+mean_ = (1/2 + x1 + x2 + x3)^2
+sd_   = exp(1 + x2)
+y = rgamma(N, mean_^2/sd_^2, mean_/sd_^2)
+
+formula = y ~ gamma(sqrt(mean) ~ x1 + x2 + x3,
+                    log(sd) ~ x2)
+
+priors = list(mean = list((Intercept) ~ beta(1, 1),
+                                   x1 ~ exponential(1),
+                                   x2 ~ exponential(1),
+                                   x3 ~ exponential(1)),
+              sd   = list((Intercept) ~ exponential(1),
+                                   x2 ~ exponential(1)))
+
+data = data.frame(y = y, x1 = x1, x2 = x2, x3 = x3)
+new_stanlm(formula, priors = priors, data = data) -> modz

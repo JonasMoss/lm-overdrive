@@ -37,6 +37,8 @@ motyl_data$upper = rep(0, length(motyl_data$M))
 motyl_data$d     = abs(motyl_data$z)/sqrt(motyl_data$M)
 motyl_data$dist_indices = rep(1, length(motyl_data$M))
 motyl_data$dist_indices[motyl_data$z < motyl_data$lower] = 5
+motyl_data$year = motyl$year
+motyl_data$year_factor = as.factor(motyl$year)
 
 
 

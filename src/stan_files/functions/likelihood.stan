@@ -60,6 +60,9 @@ real likelihood_lpdf (real[] Y, int family, int N, real[ , ] params) {
 
       lcdf += inverse_gaussian_lpdf(Y[n] | mu, lambda);
     }
+  } else if(family == 9) {
+    // Folded normal.
+    for(n in 1:N) lcdf += fnormal_lpdf(Y[n] | params[n, 1], params[n, 2]);
   }
 
   return lcdf;

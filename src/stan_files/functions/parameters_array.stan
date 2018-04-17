@@ -60,6 +60,14 @@ real [ , ] get_parameters(int N, int Q, int P, int[] no_unbounded, int[] no_posi
       for(n in 1:N) params[n, q] = exp(params[n, q]);
     } else if (link_types[q] == 5) {
       for(n in 1:N) params[n, q] = params[n, q]^2;
+    } else if (link_types[q] == 6) {
+      for(n in 1:N) params[n, q] = normal_cdf(params[n, q], 0, 1);
+    } else if (link_types[q] == 7) {
+      for(n in 1:N) params[n, q] = 1 - exp(-exp(params[n, q]));
+    } else if (link_types[q] == 8) {
+      for(n in 1:N) params[n, q] = exp(params[n, q])/(1-exp(params[n, q]));
+    } else if (link_types[q] == 9) {
+      for(n in 1:N) params[n, q] = cauchy_cdf(params[n, q], 0, 1);
     }
   }
 

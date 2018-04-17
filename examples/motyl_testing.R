@@ -35,13 +35,14 @@ priors = list(mean   = list((Intercept) ~ gamma(1, 1)),
                           M_scaled ~ normal(0, 1)))
 
 straussR(formula = formula, data = motyl_data, priors = priors, chains = 1,
-         control = list(adapt_delta = 0.99)) -> mods
+         control = list(adapt_delta = 0.99)) -> mods_vsd
 
 
 rstan::extract(mods)$beta_positive[ , 1] %>% hist
 rstan::extract(mods)$beta_positive[ , 2] %>% hist
 
-plot(motyl_data$d, colMeans(rstan::extract(mods)$thetas_positive))
+plot(motyl_data$d, colMeans(rstan::extract(mods)$thetas_positive),
+     xlim = c(0, 1), ylim = c(0, 1))
 
 plot(log(motyl_data$M), log(colMeans(rstan::extract(mods)$thetas_positive)))
 cor(log(motyl_data$M), log(colMeans(rstan::extract(mods)$thetas_positive)))
@@ -49,12 +50,12 @@ plot(log(motyl_data$M), log(motyl_data$d))
 cor(log(motyl_data$M), log(motyl_data$d))
 
 ## =============================================================================
-## Take 3: Logarithms and constant sd.
+## Take 3: Logarithms: Logit transform of p wrt M_scaled.
 ## =============================================================================
 
-formula = z ~ gamma(mean ~ 1, log(sd) ~ 1, log(p) ~ 1 + M_scaled)
+formula = z ~ gamma(mean ~ 1, sd ~ 1, logit(p) ~ 1 + M_scaled)
 priors = list(mean = list((Intercept) ~ gamma(1, 1)),
-              sd   = list((Intercept) ~ normal(0, 1)),
+              sd   = list((Intercept) ~ gamma(1, 1)),
               p    = list((Intercept) ~ normal(0, 1),
                           M_scaled ~ normal(0, 1)))
 
@@ -64,14 +65,118 @@ straussR(formula = formula, data = motyl_data, priors = priors, chains = 1,
 
 rstan::extract(mods_log_csd)$beta_positive[ , 1] %>% hist
 rstan::extract(mods_log_csd)$beta_positive[ , 2] %>% hist
+mean_thetas = colMeans(rstan::extract(mods_log_csd)$thetas_positive)
 
-plot(motyl_data$d, colMeans(rstan::extract(mods_log_csd)$thetas_positive))
+plot(motyl_data$d, mean_thetas,
+     xlim = c(0, 1), ylim = c(0, 1))
 
-plot(log(motyl_data$M), log(colMeans(rstan::extract(mods_log_csd)$thetas_positive)))
-cor(log(motyl_data$M), log(colMeans(rstan::extract(mods_log_csd)$thetas_positive)))
-plot(log(motyl_data$M), log(motyl_data$d))
+
+
+plot(motyl_data$M, mean_thetas, col = "blue", ylim = c(0, 0.7), pch = 20,
+     cex = 2, bty = "l", xlab = "Study size", ylab = expression(theta))
+
+points(motyl_data$M, motyl_data$d, col = "red", pch = 20, cex = 2)
+legend("topright", c("Original", "Corrected"), col = c("red", "blue"),
+       pch = c(20, 20), cex = c(2, 2), bty = "n")
+
+## =============================================================================
+## Take 3: Most simple model.
+## =============================================================================
+
+formula = z ~ gamma(mean ~ 1,
+                    sd   ~ 1,
+                    p    ~ 1)
+
+priors = list(mean = list((Intercept) ~ gamma(1, 1)),
+              sd   = list((Intercept) ~ gamma(1, 1)),
+              p    = list((Intercept) ~ gamma(1, 1)))
+
+straussR(formula = formula, data = motyl_data, priors = priors, chains = 1,
+         control = list(adapt_delta = 0.99)) -> mods_simple_gamma
+
+
+rstan::extract(mods_simple_gamma)$beta_positive[ , 1] %>% hist
+rstan::extract(mods_simple_gamma)$beta_positive[ , 2] %>% hist
+
+thetas = rstan::extract(mods_simple_gamma)$thetas_positive
+mean_thetas = colMeans(thetas)
+mean_thetas = apply(thetas, 2, median)
+sd_thetas = apply(thetas, 2, sd)
+
+thetas_10 = apply(thetas, 2, function(x) quantile(x, probs = c(0.1)))
+thetas_50 = apply(thetas, 2, function(x) quantile(x, probs = c(0.5)))
+thetas_90 = apply(thetas, 2, function(x) quantile(x, probs = c(0.9)))
+
+hist(power_distribution(mods_simple_gamma, n = motyl_data$M), freq = FALSE,
+     breaks = 100)
+
+plot(motyl_data$d, mean_thetas,
+     xlim = c(0, 1), ylim = c(0, 1))
+
+
+plot(motyl_data$M, thetas_50, col = "blue", ylim = c(0, 0.7), pch = 20,
+     cex = 1.5, bty = "l", xlab = "Study size", ylab = expression(theta))
+points(motyl_data$M, thetas_10, cex = 0.7, col = "blue")
+points(motyl_data$M, thetas_90, cex = 0.7, col = "blue")
+abline(h = 0, col = "red", lty = 3)
+
+plot(motyl_data$M, mean_thetas, col = "blue", ylim = c(0, 0.7), pch = 20,
+     cex = 2, bty = "l", xlab = "Study size", ylab = expression(theta))
+
+points(motyl_data$M, motyl_data$d, col = "red", pch = 20, cex = 2)
+legend("topright", c("Original", "Corrected"), col = c("red", "blue"),
+       pch = c(20, 20), cex = c(2, 2), bty = "n")
+
+## =============================================================================
+## Take 4: Logarithms and varying mean.
+## =============================================================================
+
+formula = z ~ gamma(log(mean) ~ 1 + M_scaled,
+                    log(sd) ~ 1,
+                    log(p) ~ 1 + M_scaled)
+
+priors = list(mean = list((Intercept) ~ normal(0, 1),
+                          M_scaled ~ normal(0, 1)),
+              sd   = list((Intercept) ~ normal(0, 1)),
+              p    = list((Intercept) ~ normal(0, 1),
+                          M_scaled ~ normal(0, 1)))
+
+straussR(formula = formula, data = motyl_data, priors = priors, chains = 1,
+         control = list(adapt_delta = 0.99)) -> mods_log_vm
+
+
+mean_thetas = colMeans(rstan::extract(mods_log_vm)$thetas_positive)
+
+plot(motyl_data$d, mean_thetas,
+     xlim = c(0, 1), ylim = c(0, 1))
+
+plot(motyl_data$M, mean_thetas, log = "xy")
+points(motyl_data$M, motyl_data$d, col = "red")
+cor(log(motyl_data$M), log(mean_thetas))
 cor(log(motyl_data$M), log(motyl_data$d))
 
+lplot(sort(motyl_data$M), exp(-1.64 - 0.27*sort(motyl_data$M_scaled)))
+
+## =============================================================================
+## Take 5: Logarithms and varying mean, sd.
+## =============================================================================
+
+formula = z ~ gamma(log(mean) ~ 1 + M_scaled,
+                    log(sd) ~ 1 + M_scaled,
+                    log(p) ~ 1 + M_scaled)
+
+priors = list(mean = list((Intercept) ~ normal(0, 1),
+                          M_scaled ~ normal(0, 1)),
+              sd   = list((Intercept) ~ normal(0, 1),
+                          M_scaled ~ normal(0, 1)),
+              p    = list((Intercept) ~ normal(0, 1),
+                          M_scaled ~ normal(0, 1)))
+
+straussR(formula = formula, data = motyl_data, priors = priors, chains = 1,
+         control = list(adapt_delta = 0.99)) -> mods_log_vms
+
+
+lplot(sort(motyl_data$M), exp(-1.64 - 0.27*sort(motyl_data$M_scaled)))
 
 ## =============================================================================
 ## Posterior predictive distributions

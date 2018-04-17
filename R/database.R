@@ -50,7 +50,13 @@ family_list = list(
                         domain  = "unbounded",
                         mean    = "unbounded",
                         sd      = "positive",
-                        extra_parameters = list(lambda = "positive")))
+                        extra_parameters = list(lambda = "positive")),
+
+  fnormal = list(integer = 9,
+                 domain  = "positive",
+                 mean    = "unbounded",
+                 sd      = "positive",
+                 extra_parameters = NULL))
 
 link_list = list(
   inverse = list(

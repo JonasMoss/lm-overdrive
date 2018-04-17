@@ -2,20 +2,11 @@
 % Please edit documentation in R/helpers.R
 \name{prior_formula_to_list}
 \alias{prior_formula_to_list}
-\alias{prior_formula_to_list}
 \title{Make a list from formulas.}
 \usage{
 prior_formula_to_list(formula, .force = TRUE)
-
-prior_formula_to_list(formula, .force = TRUE)
 }
 \arguments{
-\item{formula}{Two-sided formula with a covariate on the left-hand side and
-a prior from \code{prior_list} on the right-hand side.}
-
-\item{.force}{Logical; if \code{TRUE}, forces the arguments given to the
-prior.}
-
 \item{formula}{Two-sided formula with a covariate on the left-hand side and
 a prior from \code{prior_list} on the right-hand side.}
 
@@ -25,12 +16,7 @@ prior.}
 \value{
 A list containing the name of the covariate, the name of the prior,
 and the values of the prior parameters.
-
-A list containing the name of the covariate, the name of the prior,
-and the values of the prior parameters.
 }
 \description{
-Make a list from formulas.
-
 Make a list from formulas.
 }

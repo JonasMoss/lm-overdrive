@@ -2,27 +2,17 @@
 % Please edit documentation in R/helpers.R
 \name{prior_massage}
 \alias{prior_massage}
-\alias{prior_massage}
 \title{Transforms a list of priors to matrix form.}
 \usage{
 prior_massage(priors)
-
-prior_massage(priors)
 }
 \arguments{
-\item{priors}{List of priors.}
-
 \item{priors}{List of priors.}
 }
 \value{
 A list containing a matrix of prior parameters and a vector of
 prior types.
-
-A list containing a matrix of prior parameters and a vector of
-prior types.
 }
 \description{
-Transforms a list of priors to matrix form.
-
 Transforms a list of priors to matrix form.
 }

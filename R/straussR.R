@@ -21,7 +21,11 @@ straussR = function(formula, priors = NULL, data = NULL, ...) {
 
   if(missing(data)) data = NULL
   model = family_formula_to_list2(formula)
-  model_list = model_matrix(model$rhs_list, priors = priors, data = data)
+
+  model_list = model_matrix(model$rhs_list,
+                            priors = priors,
+                            data = data)
+
   priors_massage = prior_list_massage(priors)
 
   sdata = list()

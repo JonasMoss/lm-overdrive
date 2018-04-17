@@ -17,7 +17,6 @@ real likelihood_lpdf (real[] Y, int family, int N, real[ , ] params) {
       real mu = mean_ - beta*euler_mascheroni;
       lcdf += gumbel_lpdf(Y[n] | mu, beta);
     }
-
   } else if (family == 3) {
     // Skew normal.
     for(n in 1:N) {
@@ -34,13 +33,32 @@ real likelihood_lpdf (real[] Y, int family, int N, real[ , ] params) {
   } else if (family == 4) {
     // Gamma
     for(n in 1:N) {
-      real mean_ = params[n, 1];
+      real mean_  = params[n, 1];
       real var_   = params[n, 2]^2;
 
-      real alpha = mean_^2/var_;
-      real beta = mean_/var_;
+      real shape  = mean_^2/var_;
+      real rate   = mean_/var_;
 
-      lcdf += gamma_lpdf(Y[n] | alpha, beta);
+      lcdf += gamma_lpdf(Y[n] | shape, rate);
+    }
+  } else if (family == 5) {
+    // log-normal
+    for(n in 1:N) {
+      real mean_ = params[n, 1];
+      real var_  = params[n, 2]^2;
+
+      real sigma_sqr = log(var_ + mean_^2) - 2*log(mean_);
+      real mu = log(mean_) - sigma_sqr/2;
+
+      lcdf += lognormal_lpdf(Y[n] | mu, sqrt(sigma_sqr));
+    }
+  } else if(family == 6) {
+    // inverse_gaussian
+    for(n in 1:N) {
+      real mu = params[n, 1];
+      real lambda = mu^3/params[n, 2]^2;
+
+      lcdf += inverse_gaussian_lpdf(Y[n] | mu, lambda);
     }
   }
 

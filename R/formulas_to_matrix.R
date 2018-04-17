@@ -60,12 +60,6 @@ model_matrix = function(formulas, priors, data = NULL) {
 
 }
 
-formulas = list(mean ~ disp + wt,
-                1/sd^2 ~ cyl,
-                alpha ~ 0 + disp + cyl)
-
-model_matrix(formulas, data = mtcars)
-
 #' Get term labels from a formula, intercept included.
 #'
 
@@ -77,7 +71,6 @@ formula_labels = function(formula) {
   else labels
 
 }
-
 
 #' Convert a family formula
 #'
@@ -173,10 +166,3 @@ indices_to_domain_indices = function(indices, priors) {
        positive_indicies = positive_indices,
        unit_indices      = unit_indices)
 }
-
-
-
-formula = 1/p ~ disp + mpg + I(cyl^2)
-
-formula = g(p) ~ disp + mpg + I(cyl^2)
-formula = p ~ disp + mpg + I(cyl^2)

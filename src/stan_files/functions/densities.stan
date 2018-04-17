@@ -41,7 +41,8 @@ real fnormal_rng(real mu, real sigma) {
 */
 
 real inverse_gaussian_lpdf (real y, real mu, real lambda){
-  return log((lambda/(2*pi()*(y^3)))^0.5*exp(-lambda*(y - mu)^2/(2*mu^2*y)));
+  return (0.5*(log(lambda) - log(2) - log(pi()) - 3*log(y)) -
+         lambda*(y - mu)^2/(2*mu^2*y));
 }
 
 

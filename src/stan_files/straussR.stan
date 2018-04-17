@@ -1,4 +1,5 @@
 functions {
+#include /functions/densities.stan
 #include /functions/beta_priors.stan
 #include /functions/parameters_array.stan
 #include /functions/likelihood.stan
@@ -6,15 +7,19 @@ functions {
 }
 
 data {
-  int<lower = 0> MAX_PAR;  // Maximal number of parameters.
-  int<lower = 0> N;        // Number of observations.
-  int<lower = 0> P;        // Number of covariates.
-  int<lower = 0> Q;        // Number of parameters in the density.
+  int<lower = 0> MAX_PAR;     // Maximal number of parameters.
+  int<lower = 0> N_unbounded; // Number of observations.
+  int<lower = 0> N_positive;  // Number of observations.
+  int<lower = 0> N_unit;      // Number of observations.
+  int<lower = 0> N;           // Number of observations.
+  int<lower = 0> P;           // Number of covariates.
+  int<lower = 0> Q;           // Number of parameters in the density.
 
-  int<lower = 0> family;   // Integer-coded family.
-  int link_types[Q];       // Array of integer coded link types.
+  int<lower = 0> family;      // Integer-coded family.
+  int<lower = 0> family_type; // Domain of the family. 0: Unbounded.
+  int link_types[Q];          // Array of integer coded link types.
 
-  int  M[N];               // Sample sizes / degrees of freedom.
+  real M[N];               // Sample sizes / degrees of freedom.
   real lower_bounds[N];    // Vector of lower cut-offs.
   real upper_bounds[N];    // Vector of upper cut-offs.
   real Z[N];               // Responses.
@@ -53,7 +58,6 @@ data {
 
 transformed data {
   real SQRT_M[N] = sqrt(M);
-  print(sqrt(M));
 }
 
 parameters {
@@ -62,8 +66,10 @@ parameters {
   real<lower = 0>            beta_positive[sum(no_positive)];
   real<lower = 0, upper = 1> beta_unit[sum(no_unit)];
 
-  // The unobserved thetas.
-  real thetas[N];
+  // The unobserved thetas. They are split in three due to numerics.
+  real                       thetas_unbounded[N_unbounded];
+  real<lower = 0>            thetas_positive[N_positive];
+  real<lower = 0, upper = 1> thetas_unit[N_unit];
 }
 
 model {
@@ -85,12 +91,23 @@ model {
   beta_positive   ~ positive(Q, no_positive, positive_prior_types, positive_prior);
   beta_unit       ~ unit(Q, no_unit, unit_prior_types, unit_prior);
 
-  // Now for the likelihood of the unobserved theta:
-
-  thetas ~ likelihood(family, N, params);
+  // We handle the thetas.
+  if(family_type == 0) {
+    thetas_unbounded ~ likelihood(family, N, params);
+  } else if(family_type == 1) {
+    thetas_positive ~ likelihood(family, N, params);
+  } else if(family_type == 2) {
+    thetas_unit ~ likelihood(family, N, params);
+  }
 
   // Finally the zs are modelled.
 
-  Z ~ distributions(N, thetas, SQRT_M, lower_bounds, upper_bounds, dist_indices, p);
+  if(family_type == 0) {
+    Z ~ distributions(N, thetas_unbounded, SQRT_M, lower_bounds, upper_bounds, dist_indices, p);
+  } else if(family_type == 1) {
+    Z ~ distributions(N, thetas_positive, SQRT_M, lower_bounds, upper_bounds, dist_indices, p);
+  } else if(family_type == 2) {
+    Z ~ distributions(N, thetas_unit, SQRT_M, lower_bounds, upper_bounds, dist_indices, p);
+  }
 
 }

@@ -1,20 +1,11 @@
-#include /functions/densities.stan
-
 real distributions_lpdf(real[] Z, int N, real[] thetas, real[] SQRT_M,
                         real[] lower_bounds, real[] upper_bounds, int[] dist_indices, real[] p) {
-  real temp;
   real lpdf = 0;
   for(n in 1:N) {
     if(dist_indices[n] == 1) {
       // Distribution 1: Mixture, folded normal. Both possible.
 
-      if(thetas[n] < 0) {
-        temp = fabs(thetas[n]);
-      } else {
-        temp = thetas[n];
-      }
-
-      lpdf += mix_fnormal_lpdf(Z[n] | SQRT_M[n]*temp, lower_bounds[n], p[n]);
+      lpdf += mix_fnormal_lpdf(Z[n] | SQRT_M[n]*thetas[n], lower_bounds[n], p[n]);
 
     } else if(dist_indices[n] == 2) {
       // Distribution 2: Mixture, normal with upper bound. Both possible.

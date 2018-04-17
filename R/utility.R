@@ -30,8 +30,6 @@ make_alist = function(names) {
   lazy_list
 }
 
-
-
 #' Plot with \code{type = "l", bty = "l"} as standard arguments.
 #'
 #' @param ... Arguments passed to \code{plot}

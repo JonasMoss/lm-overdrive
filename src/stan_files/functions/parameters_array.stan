@@ -65,7 +65,7 @@ real [ , ] get_parameters(int N, int Q, int P, int[] no_unbounded, int[] no_posi
     } else if (link_types[q] == 7) {
       for(n in 1:N) params[n, q] = 1 - exp(-exp(params[n, q]));
     } else if (link_types[q] == 8) {
-      for(n in 1:N) params[n, q] = exp(params[n, q])/(1-exp(params[n, q]));
+      for(n in 1:N) params[n, q] = exp(params[n, q])/(1 + exp(params[n, q]));
     } else if (link_types[q] == 9) {
       for(n in 1:N) params[n, q] = cauchy_cdf(params[n, q], 0, 1);
     }

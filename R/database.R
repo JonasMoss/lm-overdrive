@@ -1,9 +1,10 @@
 # This is a database of supported priors, families, and links.
 
+.database = new.env()
 
-MP = 6 # Maximal number of parameters in a distribution. A constant.
+MAX_PAR = 6 # Maximal number of parameters in a distribution. A constant.
 
-family_list = list(
+.database$families = list(
   normal = list(integer = 1,
                 domain  = "unbounded",
                 mean    = "unbounded",
@@ -104,7 +105,7 @@ link_list = list(
     keys    = c("cauchit(x)"),
     domain  = "positive"))
 
-prior_list = list(
+.database$priors = list(
   "normal" = list(integer = 100,
                   domain  = "unbounded",
                   parameters = list(mu     = "unbounded",

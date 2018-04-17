@@ -20,29 +20,22 @@ straussR = function(formula, priors = NULL, data = NULL, ...) {
   dots = alist2(...)
 
   if(missing(data)) data = NULL
-  model = family_formula_to_list2(formula)
-
-  model_list = model_matrix(model$rhs_list,
-                            priors = priors,
-                            data = data)
-
-  priors_massage = prior_list_massage(priors)
-
-  sdata = list()
+  sdata = c(massage_data(formula, priors, data),
+            model_matrix(formula, priors, data))
 
   sdata$M            = data$M
   sdata$lower_bounds = data$lower
   sdata$upper_bounds = data$upper
   sdata$dist_indices = data$dist_indices
 
-  sdata$MAX_PAR = MP
-  sdata$N       = nrow(model_list$X)
-  sdata$P       = ncol(model_list$unbounded_indices)
-  sdata$Q       = nrow(model_list$unbounded_indices)
-  sdata$family  = model$family
+  sdata$MAX_PAR = MAX_PAR
+  sdata$N       = nrow(sdata$X)
+  sdata$P       = ncol(sdata$unbounded_indices)
+  sdata$Q       = nrow(sdata$unbounded_indices)
 
-  indices = sapply(family_list, function(elem) elem$integer) == model$family
-  family_domain = family_list[[names(which(indices))]]$domain
+  indices = sapply(.database$families, function(x) x$integer) == sdata$family
+  family_domain = .database$families[[names(which(indices))]]$domain
+
   sdata$family_type = switch(family_domain,
                              "unbounded" = 0,
                              "positive"  = 1,
@@ -52,26 +45,9 @@ straussR = function(formula, priors = NULL, data = NULL, ...) {
   sdata$N_positive  = if(family_domain  == "positive") sdata$N else 0
   sdata$N_unit      = if(family_domain  == "unit") sdata$N else 0
 
-  sdata$Z       = model.frame(model$response, data = data)[, 1]
-  sdata$X       = model_list$X
-
-  sdata$no_unbounded = rowSums(model_list$unbounded_indices)
-  sdata$no_positive  = rowSums(model_list$positive_indices)
-  sdata$no_unit      = rowSums(model_list$unit_indices)
-
-  sdata$link_types   = model$link_types
-
-  sdata$unbounded_indices     = model_list$unbounded_indices
-  sdata$unbounded_prior       = priors_massage$unbounded_prior
-  sdata$unbounded_prior_types = priors_massage$unbounded_prior_types
-
-  sdata$positive_indices     = model_list$positive_indices
-  sdata$positive_prior       = priors_massage$positive_prior
-  sdata$positive_prior_types = priors_massage$positive_prior_types
-
-  sdata$unit_indices     = model_list$unit_indices
-  sdata$unit_prior       = priors_massage$unit_prior
-  sdata$unit_prior_types = priors_massage$unit_prior_types
+  sdata$no_unbounded = rowSums(sdata$unbounded_indices)
+  sdata$no_positive  = rowSums(sdata$positive_indices)
+  sdata$no_unit      = rowSums(sdata$unit_indices)
 
   if(is.null(dots$init)) {
     no_unbounded = sum(sdata$no_unbounded)

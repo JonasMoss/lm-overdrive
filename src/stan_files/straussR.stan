@@ -4,11 +4,10 @@ functions {
 #include /functions/parameters_array.stan
 #include /functions/likelihood.stan
 #include /functions/distributions.stan
-
-
 }
 
 data {
+
   int<lower = 0> MAX_PAR;     // Maximal number of parameters.
   int<lower = 0> N_unbounded; // Number of observations.
   int<lower = 0> N_positive;  // Number of observations.

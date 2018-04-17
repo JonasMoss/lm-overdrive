@@ -3,7 +3,11 @@
 #' @param formulas A list of formulas.
 #' @return A list containing a model matrix and a matrix of indices.
 
-model_matrix = function(formulas, priors, data = NULL) {
+model_matrix = function(formula, priors, data = NULL) {
+
+  formulas = lapply(X   = rhs[2:length(formula[[3]])],
+                    FUN = as.formula,
+                    env = environment(formula))
 
   terms = lapply(formulas, formula_labels)
 
@@ -21,32 +25,38 @@ model_matrix = function(formulas, priors, data = NULL) {
   model = model.matrix(as.formula(formula_str), data)
   index_matrix = matrix(0, nrow = length(terms), ncol = ncol(model))
 
-  for(i in 1:length(terms)) {
-    index_matrix[i, match(terms[[i]], colnames(model))] = 1
+  domains = lapply(priors, function(prior) {
+    massage_priors(prior, data = data)$prior_domain
+  })
+
+  for(i in 1:length(domains)) {
+    index_matrix[i, match(names(domains[[i]]), colnames(model))] = 1
   }
 
   colnames(index_matrix) = colnames(model)
 
-  domains = lapply(priors, function(prior) prior_massage(prior)$prior_domain)
   Q = ncol(index_matrix)
   P = nrow(index_matrix)
+
 
   unbounded_indices = array(data = 0, dim = dim(index_matrix))
   positive_indices  = array(data = 0, dim = dim(index_matrix))
   unit_indices      = array(data = 0, dim = dim(index_matrix))
 
+  all_names = colnames(index_matrix)
+
   for(i in 1:length(domains)) {
     unbounded_names = names(domains[[i]][domains[[i]] == "unbounded"])
-    unbounded_indices[i, match(unbounded_names, colnames(index_matrix))] =
-      index_matrix[i, match(unbounded_names, colnames(index_matrix))]
+    unbounded_indices[i, match(unbounded_names, all_names)] =
+      index_matrix[i, match(unbounded_names, all_names)]
 
     positive_names = names(domains[[i]][domains[[i]] == "positive"])
-    positive_indices[i, match(positive_names, colnames(index_matrix))] =
-      index_matrix[i, match(positive_names, colnames(index_matrix))]
+    positive_indices[i, match(positive_names, all_names)] =
+      index_matrix[i, match(positive_names, all_names)]
 
     unit_names = names(domains[[i]][domains[[i]] == "unit"])
-    unit_indices[i, match(unit_names, colnames(index_matrix))] =
-      index_matrix[i, match(unit_names, colnames(index_matrix))]
+    unit_indices[i, match(unit_names, all_names)] =
+      index_matrix[i, match(unit_names, all_names)]
   }
 
   colnames(unbounded_indices) = colnames(model)
@@ -55,7 +65,7 @@ model_matrix = function(formulas, priors, data = NULL) {
 
   list(X                 = model,
        unbounded_indices = unbounded_indices,
-       positive_indices = positive_indices,
+       positive_indices  = positive_indices,
        unit_indices      = unit_indices)
 
 }
@@ -154,38 +164,4 @@ formula_lhs_list = function(formula) {
        link_name    = link_name,
        variable     = var)
 
-}
-
-
-
-
-
-
-indices_to_domain_indices = function(indices, priors) {
-
-  domains = lapply(priors, function(prior) prior_massage(prior)$prior_domain)
-  Q = ncol(indices)
-  P = nrow(indices)
-
-  unbounded_indices = array(data = 0, dim = dim(indices))
-  positive_indices  = array(data = 0, dim = dim(indices))
-  unit_indices      = array(data = 0, dim = dim(indices))
-
-  for(i in 1:length(domains)) {
-    unbounded_names = names(domains[[i]][domains[[i]] == "unbounded"])
-    unbounded_indices[i, match(unbounded_names, colnames(indices))] =
-    indices[i, match(unbounded_names, colnames(indices))]
-
-    positive_names = names(domains[[i]][domains[[i]] == "positive"])
-    positive_indices[i, match(positive_names, colnames(indices))] =
-      indices[i, match(positive_names, colnames(indices))]
-
-    unit_names = names(domains[[i]][domains[[i]] == "unit"])
-    unit_indices[i, match(unit_names, colnames(indices))] =
-      indices[i, match(unit_names, colnames(indices))]
-  }
-
-  list(unbounded_indices = unbounded_indices,
-       positive_indicies = positive_indices,
-       unit_indices      = unit_indices)
 }

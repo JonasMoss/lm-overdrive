@@ -109,7 +109,16 @@ link_formula_to_list = function(formula) {
   lhs = formula[[2]]
 }
 
-formula_to_link = function(formula) {
+
+#' Convenience functions for formulas.
+#'
+#' @param formula A formula object
+#' @detials The function \code{formula_lhs_list} identifies the integer code and
+#'     name of the link function, and the variable of a formula and returns them
+#'     in a named list.
+
+formula_lhs_list = function(formula) {
+
   lhs = formula[[2]]
 
   if(length(lhs) == 1) {
@@ -123,19 +132,33 @@ formula_to_link = function(formula) {
     var  = deparse(lhs[[3]])
   }
 
-  link = -Inf
+  link_integer = -Inf
 
   for (elem in link_list2) {
     if(any(unlist(lapply(elem$keys, function(key) fun == key)))) {
-      link = elem$integer
+      link_integer = elem$integer
+      link_name    = deparse(elem$keys[[1]])
       break
     }
+
   }
 
-  assertthat::assert_that(link != -Inf, msg = "Can't recognize link.")
-  list(link = link, var = var, fun = fun)
+
+  msg = paste0("Can't recognize the link '", deparse(fun), "'. Check the ",
+               "documentation for available links.")
+
+  assertthat::assert_that(link_integer != -Inf, msg = msg)
+
+
+  list(link_integer = link_integer,
+       link_name    = link_name,
+       variable     = var)
 
 }
+
+
+
+
 
 
 indices_to_domain_indices = function(indices, priors) {

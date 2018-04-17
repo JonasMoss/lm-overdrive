@@ -19,6 +19,19 @@ do_call = function(.fn, .args = NULL, ..., .env = parent.frame()) {
 
 alist2 = function(...) as.list(substitute((...)))[-1]
 
+#' Make an \code{alist} with the specified \code{names}.
+#'
+#' @param names A list or character vector with argument names.
+#' @return An \code{alist} containing named elements decided by \code{names}.
+
+make_alist = function(names) {
+  lazy_list = lapply(1:length(names), function(x) substitute())
+  names(lazy_list) = unlist(names)
+  lazy_list
+}
+
+
+
 #' Plot with \code{type = "l", bty = "l"} as standard arguments.
 #'
 #' @param ... Arguments passed to \code{plot}

@@ -1,4 +1,4 @@
-
+data = motyl_data
 formula = z ~ gamma(mean ~ 1 + M, sd ~ 1, p ~ 1)
 priors = list(mean = list((Intercept) ~ gamma(1, 1),
                           M ~ gamma(1, 1)),

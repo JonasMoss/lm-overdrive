@@ -50,9 +50,6 @@ straussR = function(formula, priors = NULL, data = NULL, ...) {
   sdata$no_unit      = rowSums(sdata$unit_indices)
 
   if(is.null(dots$init)) {
-    no_unbounded = sum(sdata$no_unbounded)
-    no_positive = sum(sdata$no_positive)
-    no_unit = sum(sdata$no_unit)
     init = function(chain_id = 1) {
       list(thetas_unbounded = rep(0.1, sdata$N_unbounded),
            thetas_positive  = rep(0.1, sdata$N_positive),

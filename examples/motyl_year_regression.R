@@ -9,9 +9,22 @@ priors = list(mean = list((Intercept) ~ normal(0, 1),
                           year_factor ~ normal(0, 1),
                           M_scaled    ~ normal(0, 1)))
 
-straussR(formula = formula, data = motyl_data, priors = priors, chains = 4,
-         control = list(adapt_delta = 0.999)) ->
-  motyl_year
+N = motyl_data
+
+straussR(formula = formula, data = motyl_data, priors = priors, chains = 1,
+         control = list(adapt_delta = 0.999), init = function(chain_id = 1) {
+           no_unbounded = sum(sdata$no_unbounded)
+           no_positive = sum(sdata$no_positive)
+           no_unit = sum(sdata$no_unit)
+           init = function(chain_id = 1) {
+             list(thetas_unbounded = rep(0.1, 9),
+                  thetas_positive  = rep(0.1, 1),
+                  beta_unbounded   = rnorm(9, 0, 0.1),
+                  beta_positive    = rgamma(1, 1, 1))
+           }
+           dots$init = init
+         }) ->
+  motyl_year2
 
 
 thetas = rstan::extract(motyl_year)$thetas_positive

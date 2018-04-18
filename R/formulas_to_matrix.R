@@ -5,6 +5,7 @@
 
 model_matrix = function(formula, priors, data = NULL) {
 
+  rhs = formula[[3]]
   formulas = lapply(X   = rhs[2:length(formula[[3]])],
                     FUN = as.formula,
                     env = environment(formula))
@@ -144,7 +145,7 @@ formula_lhs_list = function(formula) {
 
   link_integer = -Inf
 
-  for (elem in link_list2) {
+  for (elem in .database$links) {
     if(any(unlist(lapply(elem$keys, function(key) fun == key)))) {
       link_integer = elem$integer
       link_name    = deparse(elem$keys[[1]])

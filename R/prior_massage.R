@@ -101,11 +101,12 @@ massage_priors = function(prior, data = NULL) {
 #' \code{formula}.
 #' @param data An optional data frame.
 #'
-#' @return Not sure.
+#' @return A list containing all the data needed for \code{straussR}-
 
 massage_data = function(formula, priors, data = NULL) {
 
   ## Collection of formulas on the right hand side in 'formula'.
+  rhs = formula[[3]]
   formulas = lapply(X   = rhs[2:length(formula[[3]])],
                     FUN = as.formula,
                     env = environment(formula))
@@ -137,7 +138,7 @@ massage_data = function(formula, priors, data = NULL) {
 
   # Get distribution family and match it with the table.
   family_name = formula[[3]][[1]]
-  family_object = family_list[[deparse(family_name)]]
+  family_object = .database$families[[deparse(family_name)]]
   msg = paste0("The familt object '", deparse(family_name), "' is not ",
                "recognized. See the documentation for supported families.")
   assertthat::assert_that(!is.null(family_object), msg = msg)
@@ -244,14 +245,162 @@ massage_data = function(formula, priors, data = NULL) {
     index = index + 1
   }
 
-  list(Z                     = unlist(Z),
-       family                = family,
-       link_types            = links,
-       unbounded_prior       = unbounded_prior,
-       positive_prior        = positive_prior,
-       unit_prior            = unit_prior,
-       unbounded_prior_types = unbounded_prior_types,
-       positive_prior_types  = positive_prior_types,
-       unit_prior_types      = unit_prior_types)
+  sdata = c(model_matrix(formula, priors, data),
+    list(Z                     = unlist(Z),
+         family                = family,
+         link_types            = links,
+         unbounded_prior       = unbounded_prior,
+         positive_prior        = positive_prior,
+         unit_prior            = unit_prior,
+         unbounded_prior_types = unbounded_prior_types,
+         positive_prior_types  = positive_prior_types,
+         unit_prior_types      = unit_prior_types))
+
+
+  sdata$M            = data$M
+  sdata$lower_bounds = data$lower
+  sdata$upper_bounds = data$upper
+  sdata$dist_indices = data$dist_indices
+
+  sdata$MAX_PAR = MAX_PAR
+  sdata$N       = nrow(sdata$X)
+  sdata$P       = ncol(sdata$unbounded_indices)
+  sdata$Q       = nrow(sdata$unbounded_indices)
+
+  indices = sapply(.database$families, function(x) x$integer) == sdata$family
+  family_domain = .database$families[[names(which(indices))]]$domain
+
+  sdata$family_type = switch(family_domain,
+                             "unbounded" = 0,
+                             "positive"  = 1,
+                             "unit"      = 2)
+
+  sdata$N_unbounded = if(family_domain  == "unbounded") sdata$N else 0
+  sdata$N_positive  = if(family_domain  == "positive") sdata$N else 0
+  sdata$N_unit      = if(family_domain  == "unit") sdata$N else 0
+
+  sdata$no_unbounded = rowSums(sdata$unbounded_indices)
+  sdata$no_positive  = rowSums(sdata$positive_indices)
+  sdata$no_unit      = rowSums(sdata$unit_indices)
+
+  sdata
+
+}
+
+#' Convert a collection of formulas to a model matrix and a matrix of indices.
+#'
+#' @param formulas A list of formulas.
+#' @return A list containing a model matrices and a matrices of indices.
+
+model_matrix = function(formula, priors, data = NULL) {
+
+  rhs = formula[[3]]
+  formulas = lapply(X   = rhs[2:length(formula[[3]])],
+                    FUN = as.formula,
+                    env = environment(formula))
+
+  terms = lapply(formulas, formula_labels, include_intercept = TRUE)
+
+  uniques = unique(unlist(terms))
+
+  if("(Intercept)" %in% uniques) {
+    uniques = setdiff(uniques, "(Intercept)")
+  } else {
+    uniques = c("0", uniques)
+  }
+
+  if(length(uniques) == 0) uniques = c(1)
+  formula_str = paste("~", do.call(paste, as.list(c(sep = " + ", uniques))))
+
+  model = model.matrix(as.formula(formula_str), data)
+  index_matrix = matrix(0, nrow = length(terms), ncol = ncol(model))
+
+  domains = lapply(priors, function(prior) {
+    massage_priors(prior, data = data)$prior_domain
+  })
+
+  for(i in 1:length(domains)) {
+    index_matrix[i, match(names(domains[[i]]), colnames(model))] = 1
+  }
+
+  colnames(index_matrix) = colnames(model)
+
+  Q = ncol(index_matrix)
+  P = nrow(index_matrix)
+
+
+  unbounded_indices = array(data = 0, dim = dim(index_matrix))
+  positive_indices  = array(data = 0, dim = dim(index_matrix))
+  unit_indices      = array(data = 0, dim = dim(index_matrix))
+
+  all_names = colnames(index_matrix)
+
+  for(i in 1:length(domains)) {
+    unbounded_names = names(domains[[i]][domains[[i]] == "unbounded"])
+    unbounded_indices[i, match(unbounded_names, all_names)] =
+      index_matrix[i, match(unbounded_names, all_names)]
+
+    positive_names = names(domains[[i]][domains[[i]] == "positive"])
+    positive_indices[i, match(positive_names, all_names)] =
+      index_matrix[i, match(positive_names, all_names)]
+
+    unit_names = names(domains[[i]][domains[[i]] == "unit"])
+    unit_indices[i, match(unit_names, all_names)] =
+      index_matrix[i, match(unit_names, all_names)]
+  }
+
+  colnames(unbounded_indices) = colnames(model)
+  colnames(positive_indices)  = colnames(model)
+  colnames(unit_indices)      = colnames(model)
+
+  list(X                 = model,
+       unbounded_indices = unbounded_indices,
+       positive_indices  = positive_indices,
+       unit_indices      = unit_indices)
+
+}
+
+#' Convenience functions for formulas.
+#'
+#' @param formula A formula object
+#' @details The function \code{formula_lhs_list} identifies the integer code and
+#'     name of the link function, and the variable of a formula and returns them
+#'     in a named list.
+
+formula_lhs_list = function(formula) {
+
+  lhs = formula[[2]]
+
+  if(length(lhs) == 1) {
+    fun  = quote(identity)
+    var  = deparse(lhs)
+  } else if (length(lhs) == 2) {
+    fun  = lhs[[1]]
+    var  = deparse(lhs[[2]])
+  } else if (length(lhs) == 3) {
+    fun  = lhs[[1]]
+    var  = deparse(lhs[[3]])
+  }
+
+  link_integer = -Inf
+
+  for (elem in .database$links) {
+    if(any(unlist(lapply(elem$keys, function(key) fun == key)))) {
+      link_integer = elem$integer
+      link_name    = deparse(elem$keys[[1]])
+      break
+    }
+
+  }
+
+  msg = paste0("Can't recognize the link '", deparse(fun), "'. Check the ",
+               "documentation for available links.")
+
+  assertthat::assert_that(link_integer != -Inf, msg = msg)
+
+
+  list(link_integer = link_integer,
+       link_name    = link_name,
+       variable     = var)
 
 }

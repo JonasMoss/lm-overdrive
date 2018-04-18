@@ -65,6 +65,7 @@ straussR(formula = formula, data = rpp_data, priors = priors, chains = 1,
 
 
 thetas = colMeans(rstan::extract(rpp_model)$thetas_positive)
+theta = rstan::extract(rpp_model)$thetas_positive
 plot(rpp_data$d.original, thetas)
 plot(rpp_data$d.original, rpp_data$d.replicated)
 plot(thetas, rpp_data$d.replicated)
@@ -73,3 +74,18 @@ cor(na.omit(cbind(rpp_data$d.original, rpp_data$d.replicated, thetas)))
 mean(thetas)
 mean(rpp_data$d.original, na.rm = TRUE)
 mean(rpp_data$d.replicated, na.rm = TRUE)
+
+mean((rpp_data$d.original - rpp_data$d.replicated)^2, na.rm = TRUE)
+mean((thetas - rpp_data$d.replicated)^2, na.rm = TRUE)
+
+thetas_05 = apply(theta, 2, quantile, 0.05)
+thetas_50 = apply(theta, 2, quantile, 0.5)
+thetas_95 = apply(theta, 2, quantile, 0.95)
+
+plot(sort(thetas_50), type = "l", col = "blue")
+points(thetas_95[order(thetas_50)], type = "l", col = "red")
+points(thetas_05[order(thetas_50)], type = "l", col = "red")
+points(rpp_data$d.replicated[order(thetas_50)], col = "black", pch = 20)
+points(rpp_data$d.original[order(thetas_50)], col = "green", pch = 20)
+
+

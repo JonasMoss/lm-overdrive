@@ -59,52 +59,6 @@ MAX_PAR = 6 # Maximal number of parameters in a distribution. A constant.
                  sd      = "positive",
                  extra_parameters = NULL))
 
-link_list = list(
-  inverse = list(
-    integer = 2,
-    keys    = c("inverse(x)", "1/x"),
-    domain  = "unbounded"),
-
-  inverse_squared = list(
-    integer = 3,
-    keys    = c("inverse_squared(x)", "1/x^2"),
-    domain  = "positive"),
-
-  identity = list(
-    integer = 1,
-    keys    = c("identity(x)", "x"),
-    domain  = "unbounded"),
-
-  log = list(
-    integer = 4,
-    keys    = c("log(x)"),
-    domain  = "positive"),
-
-  sqrt = list(
-    integer = 5,
-    keys    = c("sqrt(x)"),
-    domain  = "positive"),
-
-  probit = list(
-    integer = 6,
-    keys    = c("probit(x)"),
-    domain  = "unit"),
-
-  cloglog = list(
-    integer = 7,
-    keys    = c("cloglog(x)"),
-    domain  = "positive"),
-
-  logit = list(
-    integer = 8,
-    keys    = c("logit(x)"),
-    domain  = "positive"),
-
-  cauchit = list(
-    integer = 9,
-    keys    = c("cauchit(x)"),
-    domain  = "positive"))
-
 .database$priors = list(
   "normal" = list(integer = 100,
                   domain  = "unbounded",
@@ -209,7 +163,7 @@ link_list = list(
 )
 
 
-link_list2 = list(
+.database$links = list(
   inverse = list(
     integer = 2,
     keys    = list(quote(inverse), quote(`/`)),

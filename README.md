@@ -22,6 +22,7 @@ the z-values of the studies, and `n` contains the (scaled) number of participant
 formula = z ~ gumbel(mean ~ 1 + x, 
                      log(sd) ~ 1 + y, 
                      probit(p) ~ 1 + n)
+                     
 priors = list(mean = list((Intercept) ~ gamma(2, 1),
                           x ~ weibull(2, 3),
               sd   = list((Intercept) ~ normal(0, 1)),

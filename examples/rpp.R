@@ -17,7 +17,8 @@ data = data.frame(z.original        = abs(test.O.value),
                   z.replicated      = abs(test.R.value),
                   z.name.replicated = test.R.name,
                   df.original       = rpp$T.df2.O,
-                  df.replicated     = rpp$T.df2.R)
+                  df.replicated     = rpp$T.df2.R
+                  )
 
 data %>%
   dplyr::filter(stringr::str_detect(z.name.original, "^F\\(1") |
@@ -43,6 +44,7 @@ data$z.name.replicated = NULL
 rpp_data = data.frame(
   z            = data$z.original,
   M            = data$df.original,
+  M.replicated = data$df.replicated,
   d.original   = data$z.original/sqrt(data$df.original),
   d.replicated = data$z.replicated/sqrt(data$df.replicated),
   lower        = qt(0.975, data$df.original),
@@ -50,16 +52,27 @@ rpp_data = data.frame(
   dist_indices = rep(1, length(data$df.original)))
 
 rpp_data$dist_indices[data$z < data$lower] = 5
-rpp_data = na.omit(data)
+rpp_data$M_scaled = scale(log(rpp_data$M))
+rpp_data = na.omit(rpp_data)
 
 ## =============================================================================
 ## Running an analysis:
 ## =============================================================================
-formula = z ~ fnormal(mean ~ 1, sd ~ 1, p ~ 1)
+
+formula = z ~ fnormal(mean ~ 1, sd ~ 1, probit(p) ~ 1 + M_scaled)
 priors = list(mean = list((Intercept) ~ gamma(1, 1)),
               sd   = list((Intercept) ~ gamma(1, 1)),
-              p    = list((Intercept) ~ beta(1, 1)))
+              p    = list((Intercept) ~ normal(0, 1),
+                          M_scaled ~ normal(0, 1)))
 
+
+formula = z ~ fnormal(mean ~ 1, sd ~ 1, probit(p) ~ 1)
+priors = list(mean = list((Intercept) ~ gamma(1, 1)),
+              sd   = list((Intercept) ~ gamma(1, 1)),
+              p    = list((Intercept) ~ normal(0, 1)))
+
+
+set.sees(313)
 straussR(formula = formula, data = rpp_data, priors = priors, chains = 1,
          control = list(adapt_delta = 0.99)) -> rpp_model
 
@@ -78,14 +91,24 @@ mean(rpp_data$d.replicated, na.rm = TRUE)
 mean((rpp_data$d.original - rpp_data$d.replicated)^2, na.rm = TRUE)
 mean((thetas - rpp_data$d.replicated)^2, na.rm = TRUE)
 
-thetas_05 = apply(theta, 2, quantile, 0.05)
+theta = rstan::extract(rpp_model)$thetas_positive
+for(i in 1:ncol(theta)) {
+  theta[ , i] = theta[ , i] + rnorm(nrow(theta), 0, 1/sqrt(rpp_data$M.replicated[i]))
+}
+
+
+
+thetas_05 = pmax(apply(theta, 2, quantile, 0.05), 0)
 thetas_50 = apply(theta, 2, quantile, 0.5)
 thetas_95 = apply(theta, 2, quantile, 0.95)
 
-plot(sort(thetas_50), type = "l", col = "blue")
-points(thetas_95[order(thetas_50)], type = "l", col = "red")
-points(thetas_05[order(thetas_50)], type = "l", col = "red")
-points(rpp_data$d.replicated[order(thetas_50)], col = "black", pch = 20)
-points(rpp_data$d.original[order(thetas_50)], col = "green", pch = 20)
+orders = order(rpp_data$d.replicated)
+orders = order(thetas_50)
+plot(thetas_50[orders], type = "l", col = "blue", ylim = c(-0.01, 2),
+     bty = "l", main = "Prediction bounds", xlab = "Index", ylab = "d")
+points(thetas_95[orders], type = "l", col = "red")
+points(thetas_05[orders], type = "l", col = "red")
+points(rpp_data$d.replicated[orders], col = "black", pch = 20)
+points(rpp_data$d.original[orders], col = "green", pch = 20)
 
 

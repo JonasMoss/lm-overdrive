@@ -1,4 +1,4 @@
-Richard Strauss in April
+Living with p-hacking
 ================================================================================
 author: Jonas Moss
 date: April 19 2018
@@ -6,12 +6,33 @@ autosize: true
 transition: zoom
 transition-speed: slow
 navigation: section
-width: 1440
-height: 900
+width: 1920
+height: 1080
 font-family: 'Helvetica'
 incremental: true
 
-What's selection for significance?
+```{r, echo = FALSE}
+## Load all the data needed.
+source("code/stan_motyl.R")
+```
+
+Estimated effect sizes from Motyl et al. (2017)
+================================================================================
+
+```{r, echo = FALSE, fig.align='center', fig.width = 8,fig.height = 4.5, dpi = 300,out.width = "1920px",out.height = "1080px"}
+data = motyl_data
+correlation = cor(log(sqrt(data$M)), log(data$z/sqrt(data$M)))
+plot(sqrt(data$M), data$z/sqrt(data$M), ylim = c(0.1, 1), log = "xy",
+     xlab = expression(sqrt(n)), ylab = "d", bty = "l", pch = 20, col = "black",
+     cex = 1.6, sub = paste0("Correlation:", signif(correlation, digits = 2)))
+lines(sort(sqrt(data$M)), 1.96/sort(sqrt(data$M)),
+      col = "red", lty = 2, lwd = 2)
+legend("topright", c("Estimated effect", expression(1.96/sqrt(n))),
+       col = c("black", "red"), bty = "n", pch = c(20, NA), lty = c(NA, 2),
+       lwd = c(NA, 2))
+```
+
+This is selection for signifance
 ================================================================================
 
 - Studies with no significant effect are not published.

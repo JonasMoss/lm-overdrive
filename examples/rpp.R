@@ -102,8 +102,8 @@ thetas_05 = pmax(apply(theta, 2, quantile, 0.05), 0)
 thetas_50 = apply(theta, 2, quantile, 0.5)
 thetas_95 = apply(theta, 2, quantile, 0.95)
 
-orders = order(rpp_data$d.replicated)
-orders = order(thetas_50)
+orders = order(rpp_data$M)
+#orders = order(thetas_50)
 plot(thetas_50[orders], type = "l", col = "blue", ylim = c(-0.01, 2),
      bty = "l", main = "Prediction bounds", xlab = "Index", ylab = "d")
 points(thetas_95[orders], type = "l", col = "red")

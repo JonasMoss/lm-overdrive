@@ -1,0 +1,13 @@
+Slide 1: Effect sizes from psychology, 
+
+* Explain what an effect size is; (lower left-hand side, use N(theta, 1)
+* Mention "small study effect".
+
+Slide 2: What causes this?
+Selective outcome reporting  (publication bias) [find example]
+Selective analysis reporting (p-hacking)        [find example]
+(Maybe: Researchers adjusting for sample size for underlying power.)
+
+Slide 3:  
+
+Slide 4:

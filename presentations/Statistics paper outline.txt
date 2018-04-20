@@ -1,0 +1,92 @@
+# Introduction: 'Ordinary' boring introduction.
+* Introduce the problem,
+* Short description / mention of earlier methods, emphasize selection models.
+
+# Classifying causes of small study effects
+
+* Classes:
+
+  0. No reporting bias.
+
+  1. Pure selection for significance. (Common selection).
+     a. Describe the idea; reference (Dana & Dunlap (1978); Gelman et al.'s paper.).
+        - A common concept of publication bias. (E.g. Sterling (1959), Rosenthal (1979)'s file-drawer problem; higly cited contemporary source).
+        - A reasonable model for p-hacking. 
+     b. Can be modeled (isolated) by selection methods from Hedges (1992). 
+        - Also used by the p-curve in psychology, where they suggest estimating it by minimum Kolmogorov distance.
+
+  2. Petty selection: minor data-dredging
+     a. When p-hacking is not taken all the way; happens with results with p in (0.05, 0.1), but
+        also selection without p-hacking.
+     b. Might be important. Selection models can be used for this (maybe!! understand them first)
+     c. Reference Uri as a proponent of super-importance; find someone else? Evidence for non-importance in psychology presented below.
+     d. Dependent on field; possibly much more important in economics than psychology, for instance. [Find reference!] (Possible paper l8r).
+
+  3. Grand selection: p-hacking beyond the call of duty
+     a. Have some examples. (Difficult? Mustn't accuse here.) 
+     b. Find some references, point forward to evidence that it is important.
+     c. Find a super-proponent of importance.
+
+  4. Sociological selection
+     a. Proponents and opponents of effects; anti-selection for significance. (Requires guess-work about motives.)
+     b. 
+
+  5. Prescient researchers.
+     a. Set up the scenario.
+     b. When is it plausible, when is it implausible?
+     c. Can use the data to guide us.
+
+# Description of the method
+  1. The correct model for a mixture of common selection and no selection.
+  2. Describe the simple model with one-sided selection and covariates for the mean.
+  3. Describe the model in higher generality and point towards the R-package.
+
+# Diagnostic plots
+  1. Corrected funnel plot.
+  2. Posterior predictive checks (find some)
+ 
+# Example: Motyl et al.
+  1.) Describe the data and the problem.
+  2.) Fit a model and show the results.
+  3.) Discuss implications for the classification of small study effects.
+  4.) Tentative conclusion for psychology.
+
+# Small simulation study
+
+# Why Bayes is the way to go
+
+* We want to understand the random effects distribution.
+  1. Reference Spiegelhalter.
+  2. Normality is not enough.
+  3. Frequentist inference is difficult and misleading. 
+     * Should be able to find reference here.
+
+* We _always_ have plenty of prior information about these issues.
+  1. Find two - three examples.
+
+* Can look at the posterior effect size distribution of individual studies.
+  1. Important for effect size calculatons.
+
+* Hypothesis tests are arguably inappropriate in this context.
+  1. Read more on this: Inapprioriate tests are e.g. for true heterogeneity;
+  2. The mean is dependent on a large number of choices made in e.g. covariates,
+     choice of effect size distribution, etc. No test will have much power in these
+     scenarios.
+  3. Creates dichotomous decisions that we wish to avoid.
+  4. Typically hard to reach binary conclusions anyway.
+
+* Identifiability:
+  1. The model do not have to be identifiable, and that is a good thing.
+
+* Hierarchical models
+
+# Conclusion
+* The way forward:
+  1. Need more high-quality data
+  2. Need good models for petty and grand selection.
+  3. Develop hierarchical models and let them live
+  4. Find good effect size distribution families.
+     - E.g. mixtures: Most studies are from the distribution of silly studies 
+       (with absolute effect size Exponential(10), for instance). Some are from a gamma 
+       around 0.5. [Might be possible to capture with covariates.
+

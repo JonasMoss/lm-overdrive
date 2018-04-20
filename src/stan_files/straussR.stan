@@ -86,6 +86,7 @@ model {
                         unbounded_indices, positive_indices, unit_indices,
                         X, link_types);
 
+  // This declaration is only used in models with p-hacking.
   real p[N] = params[ , Q];
 
   // Here we handle the prior distributions of the betas.

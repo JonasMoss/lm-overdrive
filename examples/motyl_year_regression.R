@@ -1,18 +1,15 @@
-formula = z ~ fnormal(log(mean) ~ 1 + year,
-                      sd        ~ 1 + year,
-                      probit(p) ~ 1 + year + n)
+formula = z ~ fnormal(log(mean) ~ 1,
+                      sd        ~ 1,
+                      probit(p) ~ 1 + n)
 
-priors = list(mean = list((Intercept) ~ normal(0, 1),
-                          year        ~ normal(0, 1)),
-              sd   = list((Intercept) ~ gamma(3, 1),
-                          year        ~ weibull(2, 3)),
+priors = list(mean = list((Intercept) ~ normal(0, 1)),
+              sd   = list((Intercept) ~ gamma(3, 1)),
               p    = list((Intercept) ~ normal(0, 1),
-                          year        ~ normal(0, 1),
                           n           ~ gumbel(0, 1)))
 
 straussR(formula = formula, data = motyl_data, priors = priors, chains = 1,
          control = list(adapt_delta = 0.999)) ->
-  motyl_year2
+  motyl_year
 
 
 
@@ -32,9 +29,15 @@ mean_thetas = colMeans(thetas)
 mean_thetas = apply(thetas, 2, median)
 sd_thetas = apply(thetas, 2, sd)
 
-thetas_10 = apply(thetas, 2, function(x) quantile(x, probs = c(0.1)))
+thetas_10 = apply(thetas, 2, function(x) quantile(x, probs = c(0.05)))
 thetas_50 = apply(thetas, 2, function(x) quantile(x, probs = c(0.5)))
-thetas_90 = apply(thetas, 2, function(x) quantile(x, probs = c(0.9)))
+thetas_90 = apply(thetas, 2, function(x) quantile(x, probs = c(0.95)))
+
+orders = order(motyl_data$M)
+lplot(motyl_data$M[orders], thetas_50[orders], ylim = c(-0.01, 1), col = "blue")
+lines(motyl_data$M[orders], thetas_10[orders], col = "red")
+lines(motyl_data$M[orders], thetas_90[orders], col = "red")
+points(motyl_data$M[orders], motyl_data$d[orders])
 
 hist(power_distribution(motyl_year, n = motyl_data$M), freq = FALSE,
      breaks = 100)

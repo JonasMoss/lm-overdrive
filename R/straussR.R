@@ -1,5 +1,5 @@
 stan_straussR = rstan::stan_model(file       = "src/stan_files/straussR.stan",
-                                 model_name = "straussR")
+                                 model_name  = "straussR")
 
 
 #' Mixture-based Bayesian Meta-analysis

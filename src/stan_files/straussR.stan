@@ -4,11 +4,9 @@ functions {
 #include /functions/parameters_array.stan
 #include /functions/likelihood.stan
 #include /functions/distributions.stan
-
 }
 
 data {
-
   int<lower = 0> MAX_PAR;     // Maximal number of parameters.
   int<lower = 0> N_unbounded; // Number of observations.
   int<lower = 0> N_positive;  // Number of observations.
@@ -77,6 +75,9 @@ parameters {
 }
 
 model {
+  // The vector of probabilities for p-hacking.
+  real p[N];
+
   // Array of transformed parameters. Here the 'params' array is constructed
   // and the link transformations are carried out. The params array is used
   // in the likelihood. 'params' should be thought of as g^(-1)('beta %*% X')
@@ -88,8 +89,7 @@ model {
                         unbounded_indices, positive_indices, unit_indices,
                         X, link_types);
 
-  // This declaration is only used in models with p-hacking.
-  real p[N] = params[ , Q];
+  p = params[ , Q];
 
   // Here we handle the prior distributions of the betas.
   beta_unbounded  ~ unbounded(Q, no_unbounded, unbounded_prior_types, unbounded_prior);

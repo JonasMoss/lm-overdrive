@@ -9,30 +9,54 @@ MAX_PAR = 6
 .database = new.env()
 
 ## A description of the likelihoods involved.
-.database$likelihood  = c(
-  "Mixture, folded normal",
+tmp_names = c(
+  ## Mixtures of truncated and non-truncated fnormals and normals.
+  "Mixture, folded normal with lower bound",
+  "Mixture, folded normal with upper bound",
+  "Mixture, folded normal with double bound",
+  "Mixture, folded normal with inner bound",
+
   "Mixture, normal with upper bound",
   "Mixture, normal with lower bound",
-  "Folded normal, does not affect p",
+  "Mixture, normal with double bound",
+  "Mixture, normal with inner bound",
+
+  ## fnormals and normals that affect p.
   "Folded normal, affects p",
-  "Normal, does not affect p",
   "Normal, affects p",
+
+  ## Truncated and non-truncated fnormals and normals that affect p.
+  "Lower truncated folded normal, affects p",
+  "Upper truncated folded normal, affects p",
+  "Doubly truncated folded normal, affects p",
+  "Inner truncated folded normal, affects p",
+
+  "Lower truncated normal, affects p",
+  "Upper truncated normal, affects p",
+  "Doubly truncated normal, affects p",
+  "Inner truncated normal, affects p",
+
+  ## fnormals and normals that don't affect p.
+  "Folded normal, does not affect p",
+  "Normal, does not affect p",
+
+  ## Truncated and non-truncated fnormals and normals that don't affect p.
   "Lower truncated folded normal, does not affect p",
-  "Lower truncated folded normal, affects p.",
+  "Upper truncated folded normal, does not affect p",
+  "Doubly truncated folded normal, does not affect p",
+  "Inner truncated folded normal, does not affect p",
+
   "Lower truncated normal, does not affect p",
-  "Lower truncated normal, affects p.",
   "Upper truncated normal, does not affect p",
-  "Upper truncated normal, affects p."
+  "Doubly truncated normal, does not affect p",
+  "Inner truncated normal, does not affect p"
 )
 
 .database$likelihood = stats::setNames(1:length(tmp_names), tmp_names)
 rm(tmp_names)
 
 ## Is p needed for the likelihoods?
-.database$includes_p = c(TRUE, TRUE, TRUE,
-                         FALSE, TRUE, FALSE, TRUE,
-                         FALSE, TRUE, FALSE, TRUE,
-                         FALSE, TRUE)
+.database$includes_p = c(rep(TRUE, 20), rep(FALSE, 8))
 
 ## The database of families for _effect size distributions_. These are not the
 ## same as the families for the priors or the likelihood

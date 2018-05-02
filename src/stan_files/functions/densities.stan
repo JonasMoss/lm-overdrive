@@ -16,6 +16,10 @@ real fnormal_cdf(real y, real mu, real sigma) {
   return(normal_cdf(y, mu, sigma) + normal_cdf(y, -mu, sigma) - 1);
 }
 
+real fnormal_ccdf(real y, real mu, real sigma) {
+  return(2 - normal_cdf(y, mu, sigma) - normal_cdf(y, -mu, sigma));
+}
+
 real fnormal_lcdf(real y, real mu, real sigma) {
   return(log(normal_cdf(y, mu, sigma) +
              normal_cdf(y, -mu, sigma) - 1));
@@ -49,12 +53,34 @@ real upper_fnormal_lpdf(real y, real mu, real sigma, real upper) {
   return(fnormal_lpdf(y | mu, 1) - fnormal_lcdf(upper | mu, 1));
 }
 
+real inner_fnormal_lpdf(real y, real mu, real sigma, real lower, real upper) {
+  return(fnormal_lpdf(y | mu, 1) -
+         log(fnormal_cdf(upper, mu, sigma) -
+             fnormal_cdf(lower, mu, sigma)));
+}
+
+real double_fnormal_lpdf(real y, real mu, real sigma, real lower, real upper) {
+  return(fnormal_lpdf(y | mu, 1) -
+         log(fnormal_cdf(upper, mu, sigma) + fnormal_ccdf(lower, mu, sigma)));
+}
+
 real lower_normal_lpdf(real y, real mu, real sigma, real lower) {
   return(normal_lpdf(y | mu, 1) - normal_lccdf(lower | mu, 1));
 }
 
 real upper_normal_lpdf(real y, real mu, real sigma, real upper) {
   return(normal_lpdf(y | mu, 1) - normal_lcdf(upper | mu, 1));
+}
+
+real inner_normal_lpdf(real y, real mu, real sigma, real lower, real upper) {
+  return(normal_lpdf(y | mu, 1) -
+         log(normal_cdf(upper, mu, sigma) -
+             normal_cdf(lower, mu, sigma)));
+}
+
+real double_normal_lpdf(real y, real mu, real sigma, real lower, real upper) {
+  return(normal_lpdf(y | mu, 1) -
+         log(normal_cdf(upper, mu, sigma) + normal_cdf(-lower, -mu, sigma)));
 }
 
 /**
@@ -79,9 +105,19 @@ real mix_fnormal_upper_lpdf(real y, real mu, real upper, real p) {
                     fnormal_lpdf(y | mu, 1));
 }
 
+real mix_fnormal_double_lpdf(real y, real mu, real lower, real upper, real p) {
+  return log_mix(p, double_normal_lpdf(y | mu, 1, lower, upper),
+                    fnormal_lpdf(y | mu, 1));
+}
+
+real mix_fnormal_inner_lpdf(real y, real mu, real lower, real upper, real p) {
+  return log_mix(p, inner_fnormal_lpdf(y | mu, 1, lower, upper),
+                    fnormal_lpdf(y | mu, 1));
+}
+
 real mix_normal_lower_lpdf(real y, real mu, real lower, real p) {
 
-  return log_mix(p, lower_normal_lpdf(y | mu, 1, lower),
+  return log_mix(p, lower_fnormal_lpdf(y | mu, 1, lower),
                     normal_lpdf(y | mu, 1));
 }
 
@@ -89,6 +125,17 @@ real mix_normal_upper_lpdf(real y, real mu, real upper, real p) {
   return log_mix(p, upper_normal_lpdf(y | mu, 1, upper),
                     normal_lpdf(y | mu, 1));
 }
+
+real mix_normal_double_lpdf(real y, real mu, real lower, real upper, real p) {
+  return log_mix(p, double_normal_lpdf(y | mu, 1, lower, upper),
+                    normal_lpdf(y | mu, 1));
+}
+
+real mix_normal_inner_lpdf(real y, real mu, real lower, real upper, real p) {
+  return log_mix(p, inner_normal_lpdf(y | mu, 1, lower, upper),
+                    normal_lpdf(y | mu, 1));
+}
+
 
 /**
 * Inverse Gaussian distribution,

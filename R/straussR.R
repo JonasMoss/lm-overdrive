@@ -1,6 +1,8 @@
-stan_straussR = rstan::stan_model(file       = "src/stan_files/straussR.stan",
-                                 model_name  = "straussR")
+straussR_mixed = rstan::stan_model(file = "src/stan_files/straussR_mixed.stan",
+                                   model_name = "straussR_mixed")
 
+straussR_fixed = rstan::stan_model(file = "src/stan_files/straussR_fixed.stan",
+                                   model_name = "straussR_fixed")
 
 #' Mixture-based Bayesian Meta-analysis
 #'
@@ -34,9 +36,12 @@ straussR = function(formula, priors = NULL, data = NULL, ...) {
     dots$init = init
   }
 
+  object = if(sdata$family == 0) straussR_fixed else straussR_mixed
+
   do_call(rstan::sampling,
           .args  = dots,
-          object = stan_straussR,
+          object = object,
           data   = sdata)
+
 
 }

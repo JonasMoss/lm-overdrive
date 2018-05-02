@@ -156,9 +156,9 @@ massage_data = function(formula, priors, data = NULL) {
   # Now we check that the supplied formula matches the definition of the
   # chosen family.
 
-  formals = alist(mean =, sd =)
+  formals = alist()
 
-  for(param in names(family_object$extra_parameters)) {
+  for(param in names(family_object$parameters)) {
     formals[[param]] = substitute()
   }
 
@@ -258,7 +258,7 @@ massage_data = function(formula, priors, data = NULL) {
   sdata = c(model_matrix(formula, priors, data),
     list(Z                     = unlist(Z),
          family                = family,
-         link_types            = links,
+         link_types            = array(links),
          unbounded_prior       = unbounded_prior,
          positive_prior        = positive_prior,
          unit_prior            = unit_prior,
@@ -289,9 +289,9 @@ massage_data = function(formula, priors, data = NULL) {
   sdata$N_positive  = if(family_domain  == "positive") sdata$N else 0
   sdata$N_unit      = if(family_domain  == "unit") sdata$N else 0
 
-  sdata$no_unbounded = rowSums(sdata$unbounded_indices)
-  sdata$no_positive  = rowSums(sdata$positive_indices)
-  sdata$no_unit      = rowSums(sdata$unit_indices)
+  sdata$no_unbounded = array(rowSums(sdata$unbounded_indices))
+  sdata$no_positive  = array(rowSums(sdata$positive_indices))
+  sdata$no_unit      = array(rowSums(sdata$unit_indices))
 
   sdata
 

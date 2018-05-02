@@ -62,59 +62,56 @@ rm(tmp_names)
 ## same as the families for the priors or the likelihood
 
 .database$families = list(
+  fixed = list(integer = 0,
+               domain = "unbounded",
+               parameters = list(mean = "unbounded")),
   normal = list(integer = 1,
                 domain  = "unbounded",
-                mean    = "unbounded",
-                sd      = "positive",
-                extra_parameters = NULL),
+                parameters = list(mean = "unbounded",
+                                  sd   = "positive")),
 
   gumbel = list(integer = 2,
                 domain  = "unbounded",
-                mean    = "unbounded",
-                sd      = "positive",
-                extra_parameters = NULL),
+                parameters = list(mean = "unbounded",
+                                  sd   = "positive")),
 
   skew_normal = list(integer = 3,
                      domain  = "unbounded",
-                     mean    = "unbounded",
-                     sd      = "positive",
-                     extra_parameters = list(alpha = "unbounded")),
+                     parameters = list(mean  = "unbounded",
+                                       sd    = "positive",
+                                       alpha = "unbounded")),
 
   gamma = list(integer = 4,
                domain  = "positive",
-               mean    = "positive",
-               sd      = "positive",
-               extra_parameters = NULL),
+               parameters = list(mean = "positive",
+                                 sd   = "positive")),
 
   lognormal = list(integer = 5,
                    domain  = "positive",
-                   mean    = "positive",
-                   sd      = "positive",
-                   extra_parameters = NULL),
+                   parameters = list(mean = "positive",
+                                     sd   = "positive")),
 
   inverse_gaussian = list(integer = 6,
                           domain  = "positive",
-                          mean    = "positive",
-                          sd      = "positive",
-                          extra_parameters = NULL),
+                          parameters = list(mean = "positive",
+                                            sd   = "positive")),
 
   beta = list(integer = 7,
               domain  = "unit",
-              mean    = "unit",
-              sd      = "unit",
-              extra_parameters = NULL),
+              parameters = list(mean = "unit",
+                                sd   = "unit")),
 
   exp_mod_normal = list(integer = 8,
                         domain  = "unbounded",
-                        mean    = "unbounded",
-                        sd      = "positive",
-                        extra_parameters = list(lambda = "positive")),
+                        parameters = list(mean   = "unbounded",
+                                          sd     = "positive",
+                                          lambda = "positive")),
 
   fnormal = list(integer = 9,
                  domain  = "positive",
-                 mean    = "unbounded",
-                 sd      = "positive",
-                 extra_parameters = NULL))
+                 parameters = list(mean  = "unbounded",
+                                   sd    = "positive"))
+)
 
 ## The database of families for _priors_. These are not the same as the families
 ## for the effect size distributions.

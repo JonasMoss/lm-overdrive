@@ -1,7 +1,6 @@
 data = motyl_data
-formula = z ~ gamma(mean ~ 1 + M, sd ~ 1, p ~ 1)
-priors = list(mean = list((Intercept) ~ gamma(1, 1),
-                          M ~ gamma(1, 1)),
+formula = z ~ fnormal(mean ~ 1, sd ~ 1, p ~ 1)
+priors = list(mean = list((Intercept) ~ gamma(1, 1)),
               sd   = list((Intercept) ~ gamma(1, 1)),
               p    = list((Intercept) ~ beta(1, 1)))
 
@@ -11,6 +10,7 @@ straussR(formula = formula, data = motyl_data, priors = priors, chains = 1,
 
 rstan::extract(mods)$beta_positive[ , 1] %>% hist
 rstan::extract(mods)$beta_positive[ , 2] %>% hist
+rstan::extract(mods)$beta_unit[ , 1] %>% hist
 
 plot(motyl_data$d, colMeans(rstan::extract(mods)$thetas_positive))
 
@@ -20,8 +20,8 @@ plot(log(motyl_data$M), log(motyl_data$d))
 cor(log(motyl_data$M), log(motyl_data$d))
 
 
-plot(log(colMeans(rstan::extract(mods)$thetas_positive)), log(motyl_data$M))
-
+plot(log(colMeans(rstan::extract(mods)$thetas_positive)), log(motyl_data$d))
+hist(rstan::extract(mods)$thetas_positive)
 
 ## =============================================================================
 ## Take 2: Logarithms and variying sd.

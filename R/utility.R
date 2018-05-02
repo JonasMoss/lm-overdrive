@@ -178,3 +178,8 @@ formula_labels = function(formula, include_intercept = TRUE) {
 
 }
 
+#' Returns the argument list given to the current function
+#'
+#' @return The argument list
+
+arguments = function() as.list(match.call(sys.function(-1), sys.call(-1))[-1])

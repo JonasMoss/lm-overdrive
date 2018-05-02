@@ -104,6 +104,10 @@ massage_priors = function(prior, data = NULL) {
 #' @return A list containing all the data needed for \code{straussR}-
 
 massage_data = function(formula, priors, data = NULL) {
+  ## Find out if p is included in the model or not according to the likelihoods.
+
+  if(!is.null(data)) dist_indices = data$dist_indices
+  include_p = if(!any(.database$includes_p[dist_indices])) FALSE else TRUE
 
   ## Collection of formulas on the right hand side in 'formula'.
   rhs = formula[[3]]
@@ -130,11 +134,17 @@ massage_data = function(formula, priors, data = NULL) {
   assertthat::assert_that(all(sort(lhs_frame$variable) == sort(names(priors))),
                           msg = msg)
 
-  # Check p is included among the variables:
+  # Check p is included among the variables when applicable:
 
-  msg = paste0("The variable 'p' is missing from the list of priors and the
+  if(include_p) {
+    msg = paste0("The variable 'p' is missing from the list of priors and the
                formula. ")
-  assertthat::assert_that("p" %in%  names(priors), msg = msg)
+    assertthat::assert_that("p" %in%  names(priors), msg = msg)
+  } else {
+    msg = paste0("The variable 'p' is included in the list of priors and the
+                 formula, but there is no likelihood that depends on p.")
+    assertthat::assert_that(!("p" %in%  names(priors)), msg = msg)
+  }
 
   # Get distribution family and match it with the table.
   family_name = formula[[3]][[1]]
@@ -152,7 +162,7 @@ massage_data = function(formula, priors, data = NULL) {
     formals[[param]] = substitute()
   }
 
-  formals$p = substitute()
+  if(include_p) formals$p = substitute()
 
   formula_arguments = rep(0, length(lhs_frame$variable))
   names(formula_arguments) = unlist(lhs_frame$variable)

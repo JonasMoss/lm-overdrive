@@ -15,8 +15,6 @@ data {
   int<lower = 0> P;           // Number of covariates.
   int<lower = 0> Q;           // Number of parameters in the density.
 
-  // int<lower = 0> include_p;   // 0: Don't model p, 1: model p.
-
   int<lower = 0> family;      // Integer-coded family.
   int<lower = 0> family_type; // Domain of the family. 0: Unbounded.
   int link_types[Q];          // Array of integer coded link types.
@@ -75,9 +73,6 @@ parameters {
 }
 
 model {
-  // The vector of probabilities for p-hacking.
-  real p[N];
-
   // Array of transformed parameters. Here the 'params' array is constructed
   // and the link transformations are carried out. The params array is used
   // in the likelihood. 'params' should be thought of as g^(-1)('beta %*% X')
@@ -89,7 +84,8 @@ model {
                         unbounded_indices, positive_indices, unit_indices,
                         X, link_types);
 
-  p = params[ , Q];
+  // This isn't used if p is never accessed.
+  real p[N] = params[ , Q];
 
   // Here we handle the prior distributions of the betas.
   beta_unbounded  ~ unbounded(Q, no_unbounded, unbounded_prior_types, unbounded_prior);

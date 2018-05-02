@@ -21,6 +21,8 @@ straussR = function(formula, priors = NULL, data = NULL, ...) {
 
   if(missing(data)) data = NULL
 
+  # This takes cae of all the data-massaging for mixed effects models.
+
   sdata = massage_data(formula, priors, data)
 
   if(is.null(dots$init)) {
@@ -38,5 +40,3 @@ straussR = function(formula, priors = NULL, data = NULL, ...) {
           data   = sdata)
 
 }
-
-

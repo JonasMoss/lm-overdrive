@@ -1,20 +1,45 @@
+## z ~ fixed(mean ~ 1, p ~ 1)
+
+
+N = 100
+theta = 0.1
+n = sample(20:80, N, replace = TRUE)
+z = truncnorm::rtruncnorm(N, mean = sqrt(n)*theta, sd = 1, a = qnorm(0.975))
+
+data              = data.frame(z = z)
+data$M            = n
+data$lower        = rep(qnorm(0.975), N)
+data$upper        = rep(qnorm(0.975), N)
+data$dist_indices = rep(25, N)
+
+formula = z ~ fixed(mean ~ 1)
+priors = list(mean = list((Intercept) ~ normal(0, 1)))
+
+straussR(formula = formula, data = data, priors = priors, chains = 1,
+         control = list(adapt_delta = 0.99)) -> mods
+
+
+hist(rstan::extract(mods)$beta_unbounded)
+
 N = 100
 theta = rnorm(N, 0.1, 0.2)
 n = sample(20:80, N, replace = TRUE)
 z = truncnorm::rtruncnorm(N, mean = sqrt(n)*theta, sd = 1, a = qnorm(0.975))
 mean(z/sqrt(n))
 pcurve(z/sqrt(n), n, type = "mixed")
+pcurve(z/sqrt(n), n, type = "fixed")
 
-frame              = data.frame(z = z)
-frame$M            = n
-frame$lower        = rep(qnorm(0.975), N)
-frame$upper        = rep(qnorm(0.975), N)
-frame$dist_indices = rep(10, N)
+
+data              = data.data(z = z)
+data$M            = n
+data$lower        = rep(qnorm(0.975), N)
+data$upper        = rep(qnorm(0.975), N)
+data$dist_indices = rep(15, N)
 
 formula = z ~ normal(mean ~ 1,
                      sd ~ 1)
 
-priors = list(mean = list((Intercept) ~ gamma(1, 1)),
+priors = list(mean = list((Intercept) ~ normal(0, 1)),
               sd   = list((Intercept) ~ gamma(1, 1)))
 
 formula = z ~ normal(mean ~ 1,
@@ -25,7 +50,7 @@ priors = list(mean = list((Intercept) ~ gamma(1, 1)),
               sd   = list((Intercept) ~ gamma(1, 1)),
               p   = list((Intercept) ~ beta(1, 1)))
 
-straussR(formula = formula, data = frame, priors = priors, chains = 1,
+straussR(formula = formula, data = data, priors = priors, chains = 1,
          control = list(adapt_delta = 0.99)) -> mods
 
 order = order(theta)

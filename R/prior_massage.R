@@ -16,7 +16,7 @@ massage_prior = function(prior, data = NULL, .force = TRUE) {
   prior_name = deparse(extract_function_name(call))
   formals    = .database$priors[[prior_name]]$parameters
 
-  checked_params   = check_signature(formals = formals,
+  checked_params   = match_formals(formals = formals,
                                      .args   = extract_arguments(call),
                                      .force  = .force)
   covariate = prior[[2]]
@@ -167,7 +167,7 @@ massage_data = function(formula, priors, data = NULL) {
   formula_arguments = rep(0, length(lhs_frame$variable))
   names(formula_arguments) = unlist(lhs_frame$variable)
 
-  order = names(check_signature(formals = formals, .args = formula_arguments))
+  order = names(match_formals(formals = formals, .args = formula_arguments))
 
   # We use the 'order' variable to reorder the formulas and priors before
   # further processing. We must order the priors, formulas, and links.

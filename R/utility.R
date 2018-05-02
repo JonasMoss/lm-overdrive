@@ -108,15 +108,23 @@ extract_function_name = function(call) {
 #' @param formals A list of formal arguments to match.
 #' @param ... Arguments to match against \code{formals}.
 #' @param .args Optional list of arguments to match against \code{formals}.
-#' @return A named vector containing correctly ordered arguments from \code{...}
-#' and \code{.args}. Throws an error if this is not possible to do.
+#' @param .force Logical; If \code{TRUE}, forces evaluation of the arguments.
+#' @return A unlisted list containing correctly ordered arguments from
+#' \code{...} and \code{.args}. Throws an error if this is not possible to do.
 
-match_formals = function(formals, ..., .args = NULL) {
+match_formals = function(formals, ..., .args = NULL, .force = TRUE) {
   fun = function() {
     args = arguments()
-    for(arg in formals()) eval(force(parse(text = arg)[[1]]))
-    args
+
+    evaled_args = sapply(names(formals), function(arg) {
+      eval(force(parse(text = arg)[[1]]))
+    })
+
+    names(evaled_args) = names(formals)
+
+    if(.force) evaled_args else args
   }
+
   formals(fun) = formals
   unlist(do_call(fun, .args = .args, ...))
 }

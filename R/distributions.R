@@ -156,6 +156,13 @@ rdtruncfnorm = function(n, mean = 0, sd = 1, a = 1, b = -1) {
 #' A simple wrapper around truncnorm::dtruncnorm. In contrast to
 #' truncnorm::dtruncnorm, this one supports the \code{log} argument.
 dtruncnorm = function(x, mean, sd, a = -Inf, b = Inf, log = FALSE) {
-  if(log) log(truncnorm::dtruncnorm(x, mean = mean, sd = sd, a = a, b = b))
-  else truncnorm::dtruncnorm(x, mean = mean, sd = sd, a = a, b = b)
+  if(log) {
+    if(a != -Inf & b == Inf){
+        dnorm(x, mean, sd, log = TRUE) - pnorm((mean - a)/sd, log.p = TRUE)
+    } else {
+      log(truncnorm::dtruncnorm(x, mean = mean, sd = sd, a = a, b = b))
+    }
+  } else {
+    truncnorm::dtruncnorm(x, mean = mean, sd = sd, a = a, b = b)
+  }
 }

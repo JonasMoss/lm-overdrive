@@ -1,8 +1,41 @@
-# This is a database of supported priors, families, and links.
+## This file contains constants used in the package. Most important is the
+## .database environment of supported priors, families, and links. It can also
+## be used as a guide to the (forced) integer-coding in STAN.
 
+# Maximal number of parameters in a distribution. A constant.
+MAX_PAR = 6
+
+## The .database environment must be initialized. Described above and below.
 .database = new.env()
 
-MAX_PAR = 6 # Maximal number of parameters in a distribution. A constant.
+## A description of the likelihoods involved.
+.database$likelihood  = c(
+  "Mixture, folded normal",
+  "Mixture, normal with upper bound",
+  "Mixture, normal with lower bound",
+  "Folded normal, does not affect p",
+  "Folded normal, affects p",
+  "Normal, does not affect p",
+  "Normal, affects p",
+  "Lower truncated folded normal, does not affect p",
+  "Lower truncated folded normal, affects p.",
+  "Lower truncated normal, does not affect p",
+  "Lower truncated normal, affects p.",
+  "Upper truncated normal, does not affect p",
+  "Upper truncated normal, affects p."
+)
+
+.database$likelihood = stats::setNames(1:length(tmp_names), tmp_names)
+rm(tmp_names)
+
+## Is p needed for the likelihoods?
+.database$includes_p = c(TRUE, TRUE, TRUE,
+                         FALSE, TRUE, FALSE, TRUE,
+                         FALSE, TRUE, FALSE, TRUE,
+                         FALSE, TRUE)
+
+## The database of families for _effect size distributions_. These are not the
+## same as the families for the priors or the likelihood
 
 .database$families = list(
   normal = list(integer = 1,
@@ -59,6 +92,8 @@ MAX_PAR = 6 # Maximal number of parameters in a distribution. A constant.
                  sd      = "positive",
                  extra_parameters = NULL))
 
+## The database of families for _priors_. These are not the same as the families
+## for the effect size distributions.
 .database$priors = list(
   "normal" = list(integer = 100,
                   domain  = "unbounded",

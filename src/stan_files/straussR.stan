@@ -17,6 +17,8 @@ data {
   int<lower = 0> P;           // Number of covariates.
   int<lower = 0> Q;           // Number of parameters in the density.
 
+  // int<lower = 0> include_p;   // 0: Don't model p, 1: model p.
+
   int<lower = 0> family;      // Integer-coded family.
   int<lower = 0> family_type; // Domain of the family. 0: Unbounded.
   int link_types[Q];          // Array of integer coded link types.
@@ -103,7 +105,8 @@ model {
     thetas_unit ~ likelihood(family, N, params);
   }
 
-  // Finally the zs are modelled.
+  // Finally the zs are modelled. We split this into three to handle the sign
+  // constraints.
 
   if(family_type == 0) {
     Z ~ distributions(N, thetas_unbounded, SQRT_M, lower_bounds, upper_bounds, dist_indices, p);

@@ -1,3 +1,18 @@
+## =============================================================================
+## Illustration of p-hacking
+## =============================================================================
+correlation = cor(log(sqrt(data$M)), log(data$z/sqrt(data$M)))
+plot(sqrt(data$M), data$z/sqrt(data$M), ylim = c(0.1, 1), log = "xy",
+     xlab = expression(sqrt(n)), ylab = "d", bty = "l", pch = 20, col = "black",
+     cex = 1.6, main = "Estimated effect sizes from Motyl et al. (2017)",
+     sub = paste0("Correlation:", signif(correlation, digits = 2)))
+lines(sort(sqrt(data$M)), 1.96/sort(sqrt(data$M)),
+      col = "red", lty = 2, lwd = 2)
+legend("topright", c("Estimated effect", expression(1.96/sqrt(n))),
+       col = c("black", "red"), bty = "n", pch = c(20, NA), lty = c(NA, 2),
+       lwd = c(NA, 2))
+
+
 data = motyl_data
 formula = z ~ fnormal(mean ~ 1, sd ~ 1, p ~ 1)
 priors = list(mean = list((Intercept) ~ gamma(1, 1)),

@@ -17,6 +17,7 @@ real likelihood_lpdf (real[] Y, int family, int N, real[ , ] params) {
       real mu = mean_ - beta*euler_mascheroni;
       lcdf += gumbel_lpdf(Y[n] | mu, beta);
     }
+
   } else if (family == 3) {
     // Skew normal.
     for(n in 1:N) {
@@ -30,6 +31,7 @@ real likelihood_lpdf (real[] Y, int family, int N, real[ , ] params) {
 
       lcdf += skew_normal_lpdf(Y[n] | xi, omega, alpha);
     }
+
   } else if (family == 4) {
     // Gamma
     for(n in 1:N) {
@@ -41,6 +43,7 @@ real likelihood_lpdf (real[] Y, int family, int N, real[ , ] params) {
 
       lcdf += gamma_lpdf(Y[n] | shape, rate);
     }
+
   } else if (family == 5) {
     // log-normal
     for(n in 1:N) {
@@ -52,6 +55,7 @@ real likelihood_lpdf (real[] Y, int family, int N, real[ , ] params) {
 
       lcdf += lognormal_lpdf(Y[n] | mu, sqrt(sigma_sqr));
     }
+
   } else if(family == 6) {
     // inverse_gaussian
     for(n in 1:N) {
@@ -60,9 +64,38 @@ real likelihood_lpdf (real[] Y, int family, int N, real[ , ] params) {
 
       lcdf += inverse_gaussian_lpdf(Y[n] | mu, lambda);
     }
+
+  } else if(family == 7) {
+    // beta
+    for(n in 1:N) {
+      real alpha = params[n, 1]*params[n, 2];
+      real beta  = (1-params[n, 2])*params[n, 2];
+
+      lcdf += beta_lpdf(Y[n] | alpha, beta);
+    }
+
+  } else if(family == 8) {
+    // exponentially modified gaussian
+    for(n in 1:N) {
+      real mu = params[n, 1];
+      real sigma = params[n, 2];
+      real lambda = params[n, 3];
+
+      lcdf += exp_mod_normal_lpdf(Y[n] | mu, sigma, lambda);
+    }
+
   } else if(family == 9) {
     // Folded normal.
-    for(n in 1:N) lcdf += fnormal_lpdf(Y[n] | params[n, 1], params[n, 2]);
+    for(n in 1:N) {
+      lcdf += fnormal_lpdf(Y[n] | params[n, 1], params[n, 2]);
+    }
+
+  } else if(family == 10) {
+    // Zero-truncated normal
+    for(n in 1:N) {
+      lcdf += lower_normal_lpdf(Y[n] | params[n, 1], params[n, 2], 0);
+    }
+
   }
 
   return lcdf;

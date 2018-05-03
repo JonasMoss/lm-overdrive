@@ -80,7 +80,6 @@ rm(tmp_names)
                      parameters = list(mean  = "unbounded",
                                        sd    = "positive",
                                        alpha = "unbounded")),
-
   gamma = list(integer = 4,
                domain  = "positive",
                parameters = list(mean = "positive",
@@ -98,19 +97,23 @@ rm(tmp_names)
 
   beta = list(integer = 7,
               domain  = "unit",
-              parameters = list(mean = "unit",
-                                sd   = "unit")),
+              parameters = list(mean      = "unit",
+                                precision = "unit")),
 
   exp_mod_normal = list(integer = 8,
                         domain  = "unbounded",
-                        parameters = list(mean   = "unbounded",
-                                          sd     = "positive",
+                        parameters = list(mu     = "unbounded",
+                                          sigma  = "positive",
                                           lambda = "positive")),
-
   fnormal = list(integer = 9,
                  domain  = "positive",
-                 parameters = list(mean  = "unbounded",
-                                   sd    = "positive"))
+                 parameters = list(mu    = "unbounded",
+                                   sigma = "positive")),
+  truncnormal = list(integer = 10,
+                 domain  = "positive",
+                 parameters = list(mu    = "unbounded",
+                                   sigma = "positive"))
+
 )
 
 ## The database of families for _priors_. These are not the same as the families

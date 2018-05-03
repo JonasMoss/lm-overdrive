@@ -1,4 +1,4 @@
-# straussR
+# straussR <img src="man/figures/logo.jpg" align="right" width="120" height="50" />
 
 *Note:* This project has no pre-release yet! If you're interested in a working package, you will have to wait.
 

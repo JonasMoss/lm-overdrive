@@ -124,7 +124,7 @@ massage_data = function(formula, priors, data = NULL) {
 
   # Get the family.
   family_string = match.arg(deparse(formula[[3]][[1]]), names(.database$families))
-  family = c(family_string = .database$families[[family_string]]$integer)
+  family = .database$families[[family_string]]$integer
 
   # Check for equality of priors and variable names:
   msg = paste0(c("The variables in the formula:",

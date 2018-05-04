@@ -24,3 +24,6 @@ baskerville = as.data.frame(matrix(c(
 0.11, 0.0729, 1), ncol = 3, byrow = TRUE))
 
 names(baskerville) = c("effect_size", "variance", "is_randomized")
+
+saveRDS(baskerville, file = "data/baskerville.Rds")
+baskerville = readRDS("data/baskerville.Rds")

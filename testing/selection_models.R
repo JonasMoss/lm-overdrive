@@ -1,3 +1,45 @@
+## =============================================================================
+## Posterior predictive checks: Fixed vs. mixed
+## =============================================================================
+
+## First I generate som fixed effects data
+N = 100
+theta = 0.1
+n = sample(20:80, N, replace = TRUE)
+z = truncnorm::rtruncnorm(N, mean = sqrt(n)*theta, sd = 1, a = qnorm(0.975))
+
+data              = data.frame(z = z)
+data$M            = n
+data$lower        = rep(qnorm(0.975), N)
+data$upper        = rep(qnorm(0.975), N)
+data$dist_indices = rep(25, N) # 25: Lower-truncated, does not affect p.
+
+## Fixed mpdel
+
+formula = z ~ fixed(mean ~ 1)
+priors = list(mean = list((Intercept) ~ normal(0, 1)))
+
+fixed_mod = straussR(formula = formula, data = data, priors = priors,
+                     chains = 1, control = list(adapt_delta = 0.99))
+
+## Mixed model
+
+formula = z ~ normal(mean ~ 1,
+                     sd ~ 1)
+
+priors = list(mean = list((Intercept) ~ normal(0.1, 1)),
+              sd = list((Intercept) ~ gamma(1, 1)))
+
+mixed_mod = straussR(formula = formula, data = data, priors = priors,
+                     chains = 1, control = list(adapt_delta = 0.99))
+
+
+
+
+
+## =============================================================================
+## Old stuff
+## =============================================================================
 ## z ~ fixed(mean ~ 1, p ~ 1)
 
 

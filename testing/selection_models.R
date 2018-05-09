@@ -40,7 +40,47 @@ mixed_mod = straussR(formula = formula, data = data, priors = priors,
 ## =============================================================================
 ## Old stuff
 ## =============================================================================
-## z ~ fixed(mean ~ 1, p ~ 1)
+
+N = 100
+theta = rnorm(N, mean = 0.1, sd = 0.1)
+n = sample(20:80, N, replace = TRUE)
+p = rbinom(N, 1, 0.7)
+z = truncnorm::rtruncnorm(N, mean = sqrt(n)*theta, sd = 1, a = qnorm(0.95))
+z = p*z + (1-p)*rnorm(N, mean = sqrt(n)*theta, sd = 1)
+
+data              = data.frame(z = z)
+data$M            = n
+data$lower        = rep(qnorm(0.95), N)
+data$upper        = rep(qnorm(0.95), N)
+data$dist_indices = rep(6, N) # 6: Mixture, normal with lower bound
+data$dist_indices[data$z< qnorm(0.95)] = 10
+
+formula = z ~ normal(mean ~ 1,
+                     sd  ~ 1,
+                     p ~ 1 )
+
+priors = list(mean = list((Intercept) ~ normal(0, 1)),
+              sd   = list((Intercept) ~ gamma(3, 1)),
+              p    = list((Intercept) ~ gamma(1, 1)))
+
+straussR(formula = formula, data = data, priors = priors, chains = 1,
+         control = list(adapt_delta = 0.999)) ->
+  motyl_year
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 N = 100

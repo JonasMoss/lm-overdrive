@@ -106,6 +106,20 @@ confint.straussR = function(object, parm, level = 0.95) {
 }
 
 
+hist.straussR = function(x, parameter, coef, ...) {
+
+  coefs_names = get_domain(x$formula, x$priors, x$data)
+
+  if(!(parameter %in% names(coefs_names)))
+    stop("The parameter is not in the straussR object.")
+  if(!(coef %in% names(coefs_names[[parameter]])))
+    stop("The coefficient does not belong to the parameter.")
+
+  domain = (coefs_names[[parameter]])[names(coefs_names[[parameter]]) == coef]
+  unlist(coefs_names)
+}
+
+
 
 #' Get the domains
 get_domain = function(formula, priors, data = NULL) {

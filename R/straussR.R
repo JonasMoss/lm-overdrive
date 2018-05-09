@@ -14,14 +14,17 @@ straussR_fixed = rstan::stan_model(file = "src/stan_files/straussR_fixed.stan",
 #' hand side and the random effects distribution on the right hand side.
 #' @param priors List of formulas. Should contain priors for all parameters
 #' mentioned in \code{formula}.
-#' @param data An optional data frame.
+#' @param data An optional data frame. NOTE: Currently required.
 #' @return A \code{STAN} object.
 
-straussR = function(formula, priors = NULL, data = NULL, ...) {
+straussR = function(formula, priors, data, ...) {
 
   dots = alist2(...)
 
-  if(missing(data)) data = NULL
+  if(missing(data) | is.null(data)) {
+    stop("Must supply some data")
+    data = NULL
+  }
 
   # This takes cae of all the data-massaging for mixed effects models.
 

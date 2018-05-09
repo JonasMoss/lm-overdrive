@@ -21,7 +21,7 @@ real distributions_lpdf(real[] Z, int N, real[] thetas, real[] SQRT_M,
       lpdf += mix_fnormal_double_lpdf(Z[n] | SQRT_M[n]*thetas[n], lower_bounds[n], upper_bounds[n], p[n]);
 
     } else if(dist_indices[n] == 4) {
-      // "Mixture, folded normal with double bounds",
+      // "Mixture, folded normal with inner bounds",
 
       lpdf += mix_fnormal_inner_lpdf(Z[n] | SQRT_M[n]*thetas[n], lower_bounds[n], upper_bounds[n], p[n]);
 

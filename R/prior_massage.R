@@ -141,8 +141,8 @@ massage_data = function(formula, priors, data = NULL) {
                formula. ")
     assertthat::assert_that("p" %in%  names(priors), msg = msg)
   } else {
-    msg = paste0("The variable 'p' is included in the list of priors and the
-                 formula, but there is no likelihood that depends on p.")
+    msg = paste0("The variable 'p' is included in the list of priors and the",
+                 "formula, but there is no likelihood that depends on p.")
     assertthat::assert_that(!("p" %in%  names(priors)), msg = msg)
   }
 

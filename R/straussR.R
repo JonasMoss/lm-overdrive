@@ -41,10 +41,19 @@ straussR = function(formula, priors, data, ...) {
 
   object = if(sdata$family == 0) straussR_fixed else straussR_mixed
 
-  do_call(rstan::sampling,
-          .args  = dots,
-          object = object,
-          data   = sdata)
+  stan_object = do_call(.fn    = rstan::sampling,
+                        .args  = dots,
+                        object = object,
+                        data   = sdata)
 
+  return_object = list(stan_object = stan_object,
+                       sdata       = sdata,
+                       formula     = formula,
+                       priors      = priors,
+                       data        = data,
+                       dots        = dots,
+                       call        = match.call())
 
+  class(return_object) = "straussR"
+  return_object
 }

@@ -42,26 +42,48 @@ coef.straussR = function(object, summary = mean, show_effects = FALSE) {
   coefs
 }
 
-print.straussR <- function(x, digits = max(3L, getOption("digits") - 3L), ...) {
-  x
+print.straussR <- function(x, digits = max(3L, getOption("digits") - 3L),
+                           summary = mean,
+                           ...) {
+
+  summary_name = substitute(summary)
   cat("\nCall:  ",
       paste(deparse(x$call), sep = "\n", collapse = "\n"), "\n\n", sep = "")
-  if(length(coef(x))) {
-    cat("Coefficients")
-    if(is.character(co <- x$contrasts))
-      cat("  [contrasts: ",
-          apply(cbind(names(co),co), 1L, paste, collapse = "="), "]")
-    cat(":\n")
-    print.default(format(x$coefficients, digits = digits),
-                  print.gap = 2, quote = FALSE)
-  } else cat("No coefficients\n\n")
-  cat("\nDegrees of Freedom:", x$df.null, "Total (i.e. Null); ",
-      x$df.residual, "Residual\n")
-  if(nzchar(mess <- naprint(x$na.action))) cat("  (",mess, ")\n", sep = "")
-  cat("Null Deviance:	   ",	format(signif(x$null.deviance, digits)),
-      "\nResidual Deviance:", format(signif(x$deviance, digits)),
-      "\tAIC:", format(signif(x$aic, digits)))
+
+  cat("Formula:\n  ")
+  form = x$formula
+  environment(form) = NULL
+  class(form) = NULL
+  print.default(form)
   cat("\n")
+  cat("Priors: \n")
+  for(i in 1:length(priors)) {
+    name = names(priors)[i]
+    cat(" ", name, "\n")
+    for(prior_point in priors[[i]]) {
+      form = prior_point
+      environment(form) = NULL
+      class(form) = NULL
+      cat("    ")
+      print.default(form)
+    }
+  }
+
+  cat("\n")
+
+  coefs = coef(x, summary = summary, show_effects = FALSE)
+
+  if(length(coefs) != 0) {
+    cat(paste0("Summary of coefficients (", deparse(summary_name), ")"))
+    cat(":\n")
+    for(i in 1:length(coefs)) {
+      cat("  ")
+      cat(names(coefs)[i])
+      cat(":\n")
+      print.default(format(coefs[[i]], digits = digits),
+                    print.gap = 2, quote = FALSE)
+    }
+  }
   invisible(x)
 }
 

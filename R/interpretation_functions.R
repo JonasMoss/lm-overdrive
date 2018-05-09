@@ -1,22 +1,25 @@
-#' Posterior predictive distribution of a \code{snifmar} object.
+#' Prediction for \code{straussR} objects.
 #'
-#' @param x Numeric. A vector of points where the posterior predictive
-#' distribution is to be evaluated.
-#' @param object A \code{snifmar} object.
-#' @return A vector of densities with the same arity as \code{x}.
+#' @param y The point where the density is predicted.
+#' @param object A \code{straussR} object.
+#' @param x Covariates.
+#' @param n Number of observations.
+#' @param log Logical; If \code{TRUE}, returns the logarithm of the density.
+#' @return A vector of densities with the same arity as \code{y}.
 
-dppredictive = function(x, object) {
+dppredictive = function(y, object, x, n, log = FALSE) {
 
-  effect_distribution = object$effect_distribution
+  family = return_object$sdata$family_str
+  extract = rstan::extract(return_object$stan_object)
 
-  if(effect_distribution == "normal") {
+  if(family == "normal") {
 
-    theta  = rstan::extract(object$fit)$theta
-    sigma  = rstan::extract(object$fit)$sigma
+    mean = extract$theta
+    sd = extract$sigma
 
-    result = sapply(x, function(x) mean(dnorm(x, theta, sigma)))
+    result = sapply(x, function(x) mean(dnorm(x, mean, sd)))
 
-  } else if (effect_distribution == "skew_normal") {
+  } else if (family == "skew_normal") {
 
     theta  = rstan::extract(object$fit)$theta
     sigma  = rstan::extract(object$fit)$sigma
@@ -24,14 +27,14 @@ dppredictive = function(x, object) {
 
     result = sn::dsn(x, theta, sigma, beta)
 
-  } else if (effect_distribution == "gumbel") {
+  } else if (family == "gumbel") {
 
     theta  = rstan::extract(object$fit)$theta
     beta   = rstan::extract(object$fit)$beta
 
     result = extraDistr::dgumbel(x, theta, beta)
 
-  } else if (effect_distribution == "gamma") {
+  } else if (family == "gamma") {
 
     mean_ = rstan::extract(object$fit)$mean_
     sd_   = rstan::extract(object$fit)$sd_
@@ -41,7 +44,67 @@ dppredictive = function(x, object) {
 
     result = dgamma(x, shape, rate)
 
-  } else if (effect_distribution == "inverse_gaussian") {
+  } else if (family == "inverse_gaussian") {
+
+    mean_  = rstan::extract(object$fit)$mean_
+    sd_    = rstan::extract(object$fit)$sd_
+    var_   = sd_^2
+    mu     = mean_
+    lambda = mean_^3/var_
+
+    result = extraDistr::dwald(x, mu, lambda)
+  }
+
+  mean(result)
+
+}
+
+
+
+#' Posterior predictive distribution of a \code{straussR} object.
+#'
+#' @param x Numeric. A vector of points where the posterior predictive
+#' distribution is to be evaluated.
+#' @param object A \code{straussR} object.
+#' @return A vector of densities with the same arity as \code{x}.
+
+dppredictive = function(x, object) {
+
+  family = return_object$sdata$family_str
+
+  if(family == "normal") {
+
+    theta  = rstan::extract(object$fit)$theta
+    sigma  = rstan::extract(object$fit)$sigma
+
+    result = sapply(x, function(x) mean(dnorm(x, theta, sigma)))
+
+  } else if (family == "skew_normal") {
+
+    theta  = rstan::extract(object$fit)$theta
+    sigma  = rstan::extract(object$fit)$sigma
+    beta   = rstan::extract(object$fit)$beta
+
+    result = sn::dsn(x, theta, sigma, beta)
+
+  } else if (family == "gumbel") {
+
+    theta  = rstan::extract(object$fit)$theta
+    beta   = rstan::extract(object$fit)$beta
+
+    result = extraDistr::dgumbel(x, theta, beta)
+
+  } else if (family == "gamma") {
+
+    mean_ = rstan::extract(object$fit)$mean_
+    sd_   = rstan::extract(object$fit)$sd_
+    var_  = sd_^2
+    shape = mean_^2/var_
+    rate  = mean_/var_
+
+    result = dgamma(x, shape, rate)
+
+  } else if (family == "inverse_gaussian") {
 
     mean_  = rstan::extract(object$fit)$mean_
     sd_    = rstan::extract(object$fit)$sd_

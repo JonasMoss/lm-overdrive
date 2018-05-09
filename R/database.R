@@ -65,6 +65,7 @@ rm(tmp_names)
   fixed = list(integer = 0,
                domain = "unbounded",
                parameters = list(mean = "unbounded")),
+
   normal = list(integer = 1,
                 domain  = "unbounded",
                 parameters = list(mean = "unbounded",

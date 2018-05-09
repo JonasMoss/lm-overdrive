@@ -190,6 +190,10 @@ massage_data = function(formula, priors, data = NULL) {
   rm(new_formulas)
   rm(new_links)
 
+  link_names = names(.database$links)
+  link_integers = sapply(.database$links, function(l) l$integer)
+  link_strings = sapply(links, function(l) link_names[link_integers == l])
+
   # Now we must handle the many lists of priors:
   massaged_priors = lapply(X = priors,
                            FUN = massage_priors,
@@ -258,7 +262,9 @@ massage_data = function(formula, priors, data = NULL) {
   sdata = c(model_matrix(formula, priors, data),
     list(Z                     = unlist(Z),
          family                = family,
+         family_string         = family_string,
          link_types            = array(links),
+         link_strings          = link_strings,
          unbounded_prior       = unbounded_prior,
          positive_prior        = positive_prior,
          unit_prior            = unit_prior,

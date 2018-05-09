@@ -1,15 +1,20 @@
-formula = z ~ fnormal(log(mean) ~ 1,
-                      sd        ~ 1,
-                      probit(p) ~ 1 + n)
+data = motyl_data
+
+formula = z ~ normal(mean ~ 1,
+                     sd ~ 1,
+                     probit(p) ~ 1 + n)
 
 priors = list(mean = list((Intercept) ~ normal(0, 1)),
-              sd   = list((Intercept) ~ gamma(3, 1)),
-              p    = list((Intercept) ~ normal(0, 1),
-                          n           ~ gumbel(0, 1)))
+              sd = list((Intercept) ~ gamma(3, 1)),
+              p = list((Intercept) ~ normal(0, 1),
+                       n ~ gumbel(0, 1)))
 
-straussR(formula = formula, data = motyl_data, priors = priors, chains = 1,
+straussR(formula = formula,
+         data = data,
+         priors = priors,
+         chains = 1,
          control = list(adapt_delta = 0.999)) ->
-  motyl_year
+  x
 
 
 

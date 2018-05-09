@@ -16,8 +16,8 @@ tmp_names = c(
   "Mixture, folded normal with double bound",
   "Mixture, folded normal with inner bound",
 
-  "Mixture, normal with upper bound",
   "Mixture, normal with lower bound",
+  "Mixture, normal with upper bound",
   "Mixture, normal with double bound",
   "Mixture, normal with inner bound",
 

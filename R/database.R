@@ -56,7 +56,7 @@ tmp_names = c(
 rm(tmp_names)
 
 ## Is p needed for the likelihoods?
-.database$includes_p = c(rep(TRUE, 20), rep(FALSE, 8))
+.database$includes_p = c(rep(TRUE, 18), rep(FALSE, 8))
 
 ## The database of families for _effect size distributions_. These are not the
 ## same as the families for the priors or the likelihood

@@ -55,6 +55,7 @@ print.straussR <- function(x, digits = max(3L, getOption("digits") - 3L),
   cat("# straussR object \n")
   cat("# ======================================================= # \n \n")
   summary_name = substitute(summary)
+  priors = x$priors
   cat("Formula:\n  ")
   form = x$formula
   environment(form) = NULL
@@ -118,6 +119,40 @@ hist.straussR = function(x, parameter, coef, ...) {
   domain = (coefs_names[[parameter]])[names(coefs_names[[parameter]]) == coef]
   unlist(coefs_names)
 }
+
+extract_parameters = function(object, parameter, coef) {
+  stan_data = rstan::extract(object$stan_object)
+
+  coefs_names = get_domain(object$formula, object$priors, object$data)
+
+  coefs = if(unlist) lapply(coefs_names, function(coef) {
+    stats::setNames(rep(0, length(coef)), names(coef))
+  }) else lapply(coefs_names, function(coef) {
+    stats::setNames(vector("list", length(coef)), names(coef))
+  })
+
+  unbounded_index = 0
+  positive_index  = 0
+  unit_index      = 0
+
+  for(j in 1:length(coefs_names)) {
+    for(i in 1:length(coefs_names[[j]])) {
+      if(coefs_names[[j]][i]== "unbounded") {
+        unbounded_index = unbounded_index + 1
+        coefs[[j]][[i]] = summary(stan_data$beta_unbounded[, unbounded_index])
+      } else if (coefs_names[[j]][i] == "positive") {
+        positive_index = positive_index + 1
+        coefs[[j]][[i]]  = summary(stan_data$beta_positive[, positive_index])
+      } else if (coefs_names[[j]][i] == "unit") {
+        unit_index = unit_index + 1
+        coefs[[j]][[i]] = summary(stan_data$beta_unit[, unit_index])
+      }
+    }
+  }
+
+  coefs
+}
+
 
 
 

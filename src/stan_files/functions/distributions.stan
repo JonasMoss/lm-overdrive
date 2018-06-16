@@ -113,7 +113,7 @@ real distributions_lpdf(real[] Z, int N, real[] thetas, real[] SQRT_M,
     } else if(dist_indices[n] == 20) {
       // "Normal, does not affect p"
 
-      lpdf += fnormal_lpdf(Z[n] | SQRT_M[n]*thetas[n], 1);
+      lpdf += normal_lpdf(Z[n] | SQRT_M[n]*thetas[n], 1);
 
     } else if(dist_indices[n] == 21) {
       // "Lower truncated folded normal, does not affect p",

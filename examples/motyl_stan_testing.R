@@ -14,13 +14,61 @@ legend("topright", c("Estimated effect", expression(1.96/sqrt(n))),
 
 
 data = motyl_data
-formula = z ~ fnormal(mean ~ 1, sd ~ 1, p ~ 1)
-priors = list(mean = list((Intercept) ~ gamma(1, 1)),
-              sd   = list((Intercept) ~ gamma(1, 1)),
-              p    = list((Intercept) ~ beta(1, 1)))
+formula = z ~ fnormal(mu ~ 1, sigma ~ 1, p ~ 1)
+priors = list(mu = list((Intercept) ~ gamma(1, 1)),
+              sigma = list((Intercept) ~ gamma(1, 1)),
+              p = list((Intercept) ~ beta(1, 1)))
 
 straussR(formula = formula, data = motyl_data, priors = priors, chains = 1,
         control = list(adapt_delta = 0.99)) -> mods
+
+straussR(formula = z ~ fnormal(mu ~ 1, sigma ~ 1),
+         data = motyl_data_npb,
+         priors =  list(mu = list((Intercept) ~ gamma(1, 1)),
+                        sigma = list((Intercept) ~ gamma(1, 1))),
+         chains = 1,
+         control = list(adapt_delta = 0.99)) -> mods_npb
+
+mu_npb = mean(efnorm(rstan::extract(mods_npb$stan_object)$beta_positive[, 1],
+            rstan::extract(mods_npb$stan_object)$beta_positive[, 2]))
+
+sigma_npb = mean(sdfnorm(rstan::extract(mods_npb$stan_object)$beta_positive[, 1],
+                     rstan::extract(mods_npb$stan_object)$beta_positive[, 2]))
+
+mu_pb = mean(efnorm(rstan::extract(mods$stan_object)$beta_positive[, 1],
+            rstan::extract(mods$stan_object)$beta_positive[, 2]))
+
+sigma_pb = mean(sdfnorm(rstan::extract(mods$stan_object)$beta_positive[, 1],
+                         rstan::extract(mods$stan_object)$beta_positive[, 2]))
+
+
+x = seq(0, 3, by = 0.01)
+
+plot(x, dfnorm(x, mean(rstan::extract(mods_npb$stan_object)$beta_positive[, 1]),
+                  mean(rstan::extract(mods_npb$stan_object)$beta_positive[, 2])),
+                  type = "l", col = "black", bty = "l", xlab = "Density",
+                  ylab = expression(theta), main = "Effect size distributions",
+     lwd = 2)
+lines(x, dfnorm(x, mean(rstan::extract(mods$stan_object)$beta_positive[, 1]),
+               mean(rstan::extract(mods$stan_object)$beta_positive[, 2])),
+     col = "blue", lwd = 2)
+legend("topright", lty = c(1, 1), lwd = c(2, 2), col = c("blue", "black"),
+       legend = c("Corrected", "Not corrected"), bty = "n")
+
+
+x = seq(-1, 1, by = 0.001)
+plot(x, 1/2*dbeta((x + 1)/2, shape1 = 1.3, shape2 = 1.3)*0.9 +
+        1/2*dbeta((x + 1)/2, shape1 = 0.05, shape2 = 0.05)*0.1, type = "l",
+     ylab = "Density", xlab = "x", bty = "l", ylim = c(0, 1.5),
+     main = "Mixture of Beta densities")
+
+
+dkum = extraDistr::dkumar
+x = seq(-1, 1, by = 0.001)
+plot(x, 1/2*dkum((x + 1)/2, a = 1.1, b = 1.2)*0.9 +
+        1/2*dkum((x + 1)/2, a = 0.05, b = 0.05)*0.1, type = "l",
+     ylab = "Density", xlab = "x", bty = "l", ylim = c(0, 1.5),
+     main = "Mixture of Beta densities")
 
 
 rstan::extract(mods)$beta_positive[ , 1] %>% hist

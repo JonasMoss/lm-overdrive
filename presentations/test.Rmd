@@ -1,0 +1,221 @@
+---
+title: "Habits"
+author: "John Doe"
+date: "March 22, 2005"
+output:
+  beamer_presentation:
+    fonttheme: "structurebold"
+    incremental: true
+---
+
+```{r setup, echo = TRUE}
+knitr::opts_chunk$set(cache = TRUE)
+
+## Load the package
+setwd("..")
+Jmisc::sourceAll("../R")
+setwd("presentations")
+### Motyl data is prepeared
+motyl_between = readr::read_csv("../data/motyl_between.csv")
+# This is done to make the plot prettier.
+motyl_between2 = motyl_between[motyl_between$z/sqrt(motyl_between$M) > 0.10, ]
+
+
+### Anderson data preparation
+anderson = readxl::read_xls("../data/anderson.xls")
+
+n = anderson$`Sample size`
+n = (n/sqrt(n + 3))^2
+z_transform = anderson$`Fisher's Z`
+z = z_transform*sqrt(n)
+N = nrow(anderson)
+anderson$t = anderson$Correlation*sqrt((n-2)/(1 - anderson$Correlation^2))
+
+anderson_pb = data.frame(z = z,
+                         M = n,
+                         lower = rep(qnorm(0.95), N),
+                         upper = rep(0, N),
+                         dist_indices = rep(5, N),
+                         outcome = as.factor(anderson$Outcome),
+                         best = as.factor(anderson$`Best?`))
+
+anderson_pb$dist_indices[anderson_pb$z < qnorm(0.95)] = 10
+
+anderson_npb = anderson_pb
+anderson_npb$dist_indices = 20
+
+### Anderson STAN.
+straussR(formula = z ~ normal(mean ~ 1,
+                              sd  ~ 1,
+                              p ~ 1),
+
+         data = dplyr::filter(anderson_pb, outcome == "AggAff"),
+
+         priors = list(mean = list((Intercept) ~ normal(0, 1)),
+                       sd   = list((Intercept) ~ gamma(1, 20)),
+                       p    = list((Intercept) ~ beta(1, 1))),
+
+         chains = 4,
+         control = list(adapt_delta = 0.999)) ->
+  AggAff_mixed_pb
+
+
+straussR(formula = z ~ normal(mean ~ 1,
+                              sd  ~ 1),
+
+         data = dplyr::filter(anderson_npb, outcome == "AggAff"),
+
+         priors = list(mean = list((Intercept) ~ normal(0, 1)),
+                       sd   = list((Intercept) ~ gamma(1, 20))),
+
+         chains = 4,
+         control = list(adapt_delta = 0.999)) ->
+  AggAff_mixed
+
+
+## 
+
+```
+
+## This is what $p$-hacking looks like!
+
+```{r first_plot, echo = FALSE}
+plot(motyl_between2$M, motyl_between2$z/sqrt(motyl_between2$M),
+     ylab = expression(theta), xlab = "Degrees of freedom", 
+     log = "xy", bty = "l", pch = 20, sub = "Data from Motyl et al. 2016")
+lines(1:100, 1.96/sqrt(1:100), col = "blue", lty = 2, lwd = 2)
+legend(x = "topright", col = c("black", "blue"), lty = c(NA, 2), 
+       legend = expression("Effect size from study", 1.96/sqrt(n)),
+       pch = c(20, NA), lwd = c(NA, 2), bty = "n")
+
+```
+
+Classical Meta-analysis
+========================================================
+- Studies $x_i$ are drawn according $x_{i}\sim N\left(\theta_{i},1/\sqrt{n}\right)$
+    - $\theta_{i}$ are normalized -- they are *effect sizes*.
+    - Fixed effects: $\theta_i = \theta$ for all $i$.
+    - Random effects: $\theta_i \sim N(\theta_0, \sigma_0^2)$
+- The studies are usually closely related:
+    - Effect of a class of anti-depressiva;
+    - effect of some psychological intervention.
+
+
+What the previous plot should have looked like
+========================================================
+```{r second_plot, echo = FALSE}
+set.seed(313)
+theta0 = 0.5
+sigma0 = 0.3
+thetas = rnorm(nrow(motyl_between2), theta0, sigma0)
+suppressWarnings(plot(motyl_between2$M, rnorm(length(thetas), thetas, 1/sqrt(motyl_between2$M)),
+     ylab = expression(theta), xlab = "Degrees of freedom", log = "xy", bty = "l",
+     pch = 20, sub = "Simulated data, random effects"))
+lines(1:100, 1.96/sqrt(1:100), col = "blue", lty = 2, lwd = 2)
+legend("bottomleft", col = c("black", "blue"), lty = c(NA, 2), legend = expression("Effect size from study", 1.96/sqrt(n)),
+       pch = c(20, NA), lwd = c(NA, 2), bty = "n")
+
+```
+
+Example: Anderson et al. (2007) meta-analysis
+========================================================
+incremental: true
+```{r, echo = FALSE}
+plot(anderson$`Sample size`, anderson$`Fisher's Z`,
+     col = as.factor(anderson$`Best?`), pch = 20, bty = "l",
+     ylab = "Fisher Z-transform", xlab = "n", log = "x",
+     main = "Correlation Between Violent Video Games and Aggressive Affect",
+     sub = paste0("Number of studies: ", nrow(anderson)))
+lines(sort(anderson$`Sample size`), 1.96/sqrt(sort(anderson$`Sample size`)))
+legend("topright", col = c("black", "red"),
+       legend = c("Best practices", "Not best practices"),
+       pch = c(20, 20), bty = "n")
+```
+- *Question I*: Is there a difference between correlations in the two groups?
+- *Question II*: What is the effect size distribution?
+
+Answering Question I: Is there a difference in correlations?
+========================================================
+incremental: true
+- Likelihood: $$p\left(x_{i}\mid\theta_{i},p\right)=pN_{|\geq\frac{1.96}{\sqrt{n_{i}}}}\left(\theta_{i},\frac{1}{\sqrt{n_{i}}}\right)+\left(1-p\right)N\left(\theta_{i},\frac{1}{\sqrt{n_{i}}}\right)$$
+- Effect size distribution: $$\theta_{i}\sim N(\theta+\gamma\textrm{Best?},\sigma)$$
+- Priors:
+  - $\theta\sim N\left(0,1\right)$
+  - $\gamma\sim N\left(0,1\right)$
+  - $\sigma\sim\textrm{Exp}\left(1\right)$
+  - Propensity to p-hack: $p\sim\textrm{Uniform}$
+- Result:
+  - $E(\theta) = 0.11$
+  - $E(\gamma) = 0.001$
+- Will drop $\gamma$ from the model.
+
+Answering Question II: What is the effect size distribution?
+========================================================
+incremental: true
+```{r echo = FALSE}
+theta0_pb = rstan::extract(AggAff_mixed_pb$stan_object)$beta_unbounded
+theta0_npb = rstan::extract(AggAff_mixed$stan_object)$beta_unbounded
+hist(x = theta0_npb, freq = FALSE, breaks = 50,
+     col = rgb(0, 0, 1, 1/4), xlim = c(0, 0.2),
+     main = expression(paste("Posteriors for ", theta[0])),
+     xlab = expression(theta),
+     ylab = "Density")
+hist(x = theta0_pb, freq = FALSE, breaks = 50,
+     col = rgb(1, 0, 1, 1/4), add = TRUE)
+legend("topleft", col = c(rgb(1, 0, 1, 1/4), rgb(0, 0, 1, 1/4)),
+       legend = c(paste0("With correction (mean = ",
+                         round(mean(theta0_pb), 3), ")"),
+                  paste0("Without correction (mean = ",
+                         round(mean(theta0_npb), 3), ")")),
+       lty = c(1, 1), lwd = c(2, 2), bty = "n")
+```
+
+Embrace Bayes I
+========================================================
+incremental: true
+- Use Bayes not only for fun, but out of necessity.
+- With 100% selection for significance, the standard mixed effects meta-analysis
+  is
+  $$\begin{eqnarray*}
+      \theta_{i} & \sim & N\left(\theta,\sigma^{2}\right)\\
+       x_{i} & \sim & N\mid_{\geq\frac{1.96}{\sqrt{n_{i}}}}\left(\theta_{i},1\right)
+     \end{eqnarray*} $$
+- *Big Problem I:* Has extremely flat likelihood. ML is out of the question.
+- *Big Problem II:* All confidence intervals for $\theta$ with non-zero coverage
+  can be infinitely large with positive probability. [Gleser & Hwang, 1987]
+
+Embrace Bayes II
+========================================================
+incremental: true
+- We need a form of regularization!
+  - Always reasonable informative priors on $\theta$ available, e.g. standard normal.
+  - Avoid non-informative priors. They misrepresent our situation.
+- Classical arguments:
+  - We can borrow strength from other meta-analyses in the same field.
+  - Allows us to update our believes coherently.
+
+Example: Measuring effect sizes in psychology
+========================================================
+incremental: true
+- Likelihood: $$p\left(x_{i}\mid\theta_{i},p\right)=p\cdot FoldedNormal_{|\geq\frac{1.96}{\sqrt{n_{i}}}}\left(\theta_{i},\frac{1}{\sqrt{n_{i}}}\right)+\left(1-p\right)FoldedNormal\left(\theta_{i},\frac{1}{\sqrt{n_{i}}}\right)$$
+- Effect size distribution: $$\theta_{i}\sim FoldedNormal(\xi,\sigma)$$
+- Priors:
+  - $\xi \sim\textrm{Exp}\left(1\right)$
+  - $\sigma\sim\textrm{Exp}\left(1\right)$
+  - $p\sim\textrm{Uniform}$
+- What are the the effect size distributions?
+  - Without correction: Expected mean $0.53$, expected sd $0.08$
+  - With correction: Expected mean $0.33$, expected sd $0.2$
+
+Effect size distributions in psychology
+========================================================
+
+
+The End
+========================================================
+incremental: true
+- Publication bias can and should be modelled explicitly.
+- Such models should take selection for significance into account.
+- Such models should be Bayesian. If you do it with ML, you will fail.
+- Such models work well.
+- *WIP R-package:* github.com/JonasMoss/straussR

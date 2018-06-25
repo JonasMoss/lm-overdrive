@@ -1,0 +1,20 @@
+study, weaks, d, sd
+"Rosenthal et al. 1974", 2, .03, .125
+"Conn et al. 1968", 21, .12, .147
+"Jose and Cody 1971", 19, -.14, .167
+"Pellegrini and Hicks 1972 [1]", 0, 1.18, .373
+"Pellegrini and Hicks 1972 [2]", 0, .26, .369
+"Evans and Rosenthal 1968", 3, -.06, .103
+"Fielder et al. 1971", 17, -.02, .103
+"Claiborn 1969", 24, -.32, .220
+"Kester 1969", 0, .27, .164
+"Maxwell 1970", 1, .80, .251
+"Carter 1970", 0, .54, .302
+"Flowers 1966", 0, .18, .223
+"Keshock 1970", 1, -.02, .289
+"Henrikson 1970", 2, .23, .290
+"Fine 1972", 17, -.18, .159
+"Greiger 1970", 5, -.06, .167
+"Rosenthal and Jacobson 1968", 1, .30, .139
+"Fleming and Anttonen 1971", 2, .07, .094
+"Ginsburg 1970", 7, -.07, .174

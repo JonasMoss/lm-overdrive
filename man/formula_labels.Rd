@@ -13,6 +13,6 @@ formula_labels(formula, include_intercept = TRUE)
 A character vector including all terms of the formula.
 }
 \description{
-The function \code{attr(terms(formula), "term.labels")} does not include
+The function \code{attr(stats::terms(formula), "term.labels")} does not include
 the intercept.
 }

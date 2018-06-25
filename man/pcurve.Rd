@@ -4,7 +4,7 @@
 \alias{pcurve}
 \title{Fixed and mixed effects meta-analysis under selection for significance}
 \usage{
-pcurve(d, n, c = rep(qnorm(0.975), length(n)), type = "mixed")
+pcurve(d, n, c = rep(stats::qnorm(0.975), length(n)), type = "mixed")
 }
 \arguments{
 \item{d}{Vector of nbserved effect sizes.}

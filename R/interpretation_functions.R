@@ -17,7 +17,7 @@ dppredictive = function(y, object, x, n, log = FALSE) {
     mean = extract$theta
     sd = extract$sigma
 
-    result = sapply(x, function(x) mean(dnorm(x, mean, sd)))
+    result = sapply(x, function(x) mean(stats::dnorm(x, mean, sd)))
 
   } else if (family == "skew_normal") {
 
@@ -77,7 +77,7 @@ dppredictive = function(x, object) {
     theta  = rstan::extract(object$fit)$theta
     sigma  = rstan::extract(object$fit)$sigma
 
-    result = sapply(x, function(x) mean(dnorm(x, theta, sigma)))
+    result = sapply(x, function(x) mean(stats::dnorm(x, theta, sigma)))
 
   } else if (family == "skew_normal") {
 
@@ -134,11 +134,11 @@ power_distribution = function(object, n, alpha = 1.96,
 
   if(all(indices == "all")) {
     c(sapply(1:N, function(i) {
-      pnorm(1.96 - sqrt(n_sampled[i])*thetas[, i], lower.tail = FALSE)
+      stats::pnorm(1.96 - sqrt(n_sampled[i])*thetas[, i], lower.tail = FALSE)
     }))
   } else if (is.numeric(indices)) {
     c(sapply(indices, function(i) {
-      pnorm(1.96 - sqrt(n_sampled[i])*thetas[, i], lower.tail = FALSE)
+      stats::pnorm(1.96 - sqrt(n_sampled[i])*thetas[, i], lower.tail = FALSE)
     }))
   }
 }

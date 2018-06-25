@@ -9,7 +9,7 @@
 #'    For the mixed effects model, the estimates are the mean and the variance
 #'    of the normal effect size distribution.
 
-pcurve = function(d, n, c = rep(qnorm(0.975), length(n)), type = "mixed") {
+pcurve = function(d, n, c = rep(stats::qnorm(0.975), length(n)), type = "mixed") {
 
   z = sqrt(n)*d
 
@@ -22,7 +22,7 @@ pcurve = function(d, n, c = rep(qnorm(0.975), length(n)), type = "mixed") {
                                             b = Inf,
                                             log = TRUE))
 
-    result = nlm(objective, p = c(1, 1), hessian = TRUE)
+    result = stats::nlm(objective, p = c(1, 1), hessian = TRUE)
     estimate = result$estimate
     attr(estimate, "variance") = solve(result$hessian)
 
@@ -35,7 +35,7 @@ pcurve = function(d, n, c = rep(qnorm(0.975), length(n)), type = "mixed") {
                                             b = Inf,
                                             log = TRUE))
 
-    result = optimize(objective, lower = -10, upper = 10)
+    result = stats::optimize(objective, lower = -10, upper = 10)
     estimate = result$minimum
     attr(estimate, "variance") = 1/numDeriv::hessian(objective, estimate)[1]
   }

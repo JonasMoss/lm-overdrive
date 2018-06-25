@@ -78,7 +78,7 @@ print.straussR <- function(x, digits = max(3L, getOption("digits") - 3L),
 
   cat("\n")
 
-  coefs = coef(x, summary = summary, show_effects = FALSE)
+  coefs = stats::coef(x, summary = summary, show_effects = FALSE)
 
   if(length(coefs) != 0) {
     cat(paste0("Summary of coefficients (", deparse(summary_name), ")"))
@@ -100,8 +100,8 @@ confint.straussR = function(object, parm, level = 0.95) {
     stop(paste0("The option 'parm' is not implemented; use `[[` or `$` on the ",
                 "returned list instead."))
   alpha = (1 - level)/2
-  coef(x,
-       summary = function(x) quantile(x, c(alpha, 1 - alpha)),
+  stats::coef(x,
+       summary = function(x) stats::quantile(x, c(alpha, 1 - alpha)),
        unlist = FALSE)
 
 }
@@ -161,7 +161,7 @@ get_domain = function(formula, priors, data = NULL) {
 
   rhs = formula[[3]]
   formulas = lapply(X   = rhs[2:length(formula[[3]])],
-                    FUN = as.formula,
+                    FUN = stats::as.formula,
                     env = environment(formula))
 
   terms = lapply(formulas, formula_labels, include_intercept = TRUE)
@@ -177,7 +177,7 @@ get_domain = function(formula, priors, data = NULL) {
   if(length(uniques) == 0) uniques = c(1)
   formula_str = paste("~", do.call(paste, as.list(c(sep = " + ", uniques))))
 
-  model = model.matrix(as.formula(formula_str), data)
+  model = stats::model.matrix(stats::as.formula(formula_str), data)
   index_matrix = matrix(0, nrow = length(terms), ncol = ncol(model))
 
   lapply(priors, function(prior) {

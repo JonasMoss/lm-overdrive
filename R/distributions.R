@@ -21,7 +21,7 @@ NULL
 #' @rdname FoldedNormal
 dfnorm = function(x, mean = 0, sd = 1, log = FALSE) {
 
-  result = dnorm(x, mean, sd) + dnorm(x, -mean, sd)
+  result = stats::dnorm(x, mean, sd) + stats::dnorm(x, -mean, sd)
 
   if(log) log(result) else result
 
@@ -32,8 +32,8 @@ pfnorm = function(q, mean = 0, sd = 1, lower.tail = TRUE, log.p = FALSE) {
 
   correction = if(lower.tail) 1 else 0
 
-  result = pnorm(q, mean, sd, lower.tail, log.p = FALSE) +
-    pnorm(q, -mean, sd, lower.tail, log.p = FALSE) -
+  result = stats::pnorm(q, mean, sd, lower.tail, log.p = FALSE) +
+    stats::pnorm(q, -mean, sd, lower.tail, log.p = FALSE) -
     correction
 
   if(log.p) log(result) else result
@@ -42,12 +42,12 @@ pfnorm = function(q, mean = 0, sd = 1, lower.tail = TRUE, log.p = FALSE) {
 
 #' @rdname FoldedNormal
 rfnorm = function(n, mean = 0, sd = 1) {
-  abs(rnorm(n, mean = mean, sd = sd))
+  abs(stats::rnorm(n, mean = mean, sd = sd))
 }
 
 #' @rdname FoldedNormal
 efnorm = function(mean = 0, sd = 1) {
-  sd*sqrt(2/pi)*exp(-mean^2/(2*sd^2)) + mean*(1 - 2*pnorm(-mean/sd))
+  sd*sqrt(2/pi)*exp(-mean^2/(2*sd^2)) + mean*(1 - 2*stats::pnorm(-mean/sd))
 }
 
 #' @rdname FoldedNormal
@@ -108,10 +108,10 @@ rtruncfnorm = function(n, mean = 0, sd = 1, a = -Inf, b = Inf) {
 
   # Split into positive and negative parts.
   #
-  pos = pnorm((b - mean)/sd) - pnorm((a - mean)/sd)
-  neg = pnorm((- a - mean)/sd) - pnorm((- b - mean)/sd)
+  pos = stats::pnorm((b - mean)/sd) - stats::pnorm((a - mean)/sd)
+  neg = stats::pnorm((- a - mean)/sd) - stats::pnorm((- b - mean)/sd)
   p = pos/(pos + neg)
-  samples = rbinom(n, 1, p)
+  samples = stats::rbinom(n, 1, p)
 
   truncnorm::rtruncnorm(n, mean = mean, sd = sd, a = a, b = b) * samples +
     abs(truncnorm::rtruncnorm(n, mean = mean, sd = sd, a = -b, b = -a)) *
@@ -126,15 +126,15 @@ NULL
 
 #' @rdname DoubleTruncation
 dttruncnorm = function(x, mean = 0, sd = 1, a = 1, b = -1) {
-  dnorm(x, mean, sd)*(x > a | x < b)
+  stats::dnorm(x, mean, sd)*(x > a | x < b)
 }
 
 #' @rdname DoubleTruncation
 rdtruncnorm = function(n, mean = 0, sd = 1, a = 1, b = -1) {
-  numerator = pnorm((b - mean)/sd)
-  denominator = pnorm((a - mean)/sd, lower.tail = FALSE) + numerator
+  numerator = stats::pnorm((b - mean)/sd)
+  denominator = stats::pnorm((a - mean)/sd, lower.tail = FALSE) + numerator
   p = numerator/denominator
-  samples = rbinom(n, 1, p)
+  samples = stats::rbinom(n, 1, p)
   truncnorm::rtruncnorm(n, mean = mean, sd = sd, a = -Inf, b = b)*samples +
     truncnorm::rtruncnorm(n, mean = mean, sd = sd, a = a,    b = Inf)*(1-samples)
 }
@@ -144,7 +144,7 @@ rdtruncfnorm = function(n, mean = 0, sd = 1, a = 1, b = -1) {
   numerator = pfnorm(b, mean = mean, sd = sd)
   denominator = pfnorm(a, mean = mean, sd = sd, lower.tail = FALSE) + numerator
   p = numerator/denominator
-  samples = rbinom(n, 1, p)
+  samples = stats::rbinom(n, 1, p)
   rtruncfnorm(n, mean = mean, sd = sd, a = 0, b = b)*samples +
     rtruncfnorm(n, mean = mean, sd = sd, a = a,    b = Inf)*(1-samples)
 }
@@ -156,7 +156,7 @@ rdtruncfnorm = function(n, mean = 0, sd = 1, a = 1, b = -1) {
 dtruncnorm = function(x, mean, sd, a = -Inf, b = Inf, log = FALSE) {
   if(log) {
     if(a != -Inf & b == Inf){
-        dnorm(x, mean, sd, log = TRUE) - pnorm((mean - a)/sd, log.p = TRUE)
+        stats::dnorm(x, mean, sd, log = TRUE) - stats::pnorm((mean - a)/sd, log.p = TRUE)
     } else {
       log(truncnorm::dtruncnorm(x, mean = mean, sd = sd, a = a, b = b))
     }

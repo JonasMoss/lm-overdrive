@@ -25,7 +25,7 @@ massage_prior = function(prior, data = NULL, .force = TRUE) {
 
   if(!is.null(data) & deparse(covariate) != "(Intercept)") {
     if(is.factor(data[[covariate]])) {
-      mod_matrix = model.matrix(as.formula(paste0("~", covariate)), data)
+      mod_matrix = stats::model.matrix(stats::as.formula(paste0("~", covariate)), data)
       covariates = colnames(mod_matrix)[-1]
     }
   }
@@ -112,7 +112,7 @@ massage_data = function(formula, priors, data = NULL) {
   ## Collection of formulas on the right hand side in 'formula'.
   rhs = formula[[3]]
   formulas = lapply(X   = rhs[2:length(formula[[3]])],
-                    FUN = as.formula,
+                    FUN = stats::as.formula,
                     env = environment(formula))
 
   # First we identify the links and variable names of the formula.
@@ -120,7 +120,7 @@ massage_data = function(formula, priors, data = NULL) {
   links = as.list(stats::setNames(lhs_frame$link_integer, lhs_frame$variable))
 
   # Find the response variable name and get its value.
-  Z = model.frame(paste0("~", formula[[2]]), data = data)
+  Z = stats::model.frame(paste0("~", formula[[2]]), data = data)
 
   # Get the family.
   family_string = match.arg(deparse(formula[[3]][[1]]), names(.database$families))
@@ -312,7 +312,7 @@ model_matrix = function(formula, priors, data = NULL) {
 
   rhs = formula[[3]]
   formulas = lapply(X   = rhs[2:length(formula[[3]])],
-                    FUN = as.formula,
+                    FUN = stats::as.formula,
                     env = environment(formula))
 
   terms = lapply(formulas, formula_labels, include_intercept = TRUE)
@@ -328,7 +328,7 @@ model_matrix = function(formula, priors, data = NULL) {
   if(length(uniques) == 0) uniques = c(1)
   formula_str = paste("~", do.call(paste, as.list(c(sep = " + ", uniques))))
 
-  model = model.matrix(as.formula(formula_str), data)
+  model = stats::model.matrix(stats::as.formula(formula_str), data)
   index_matrix = matrix(0, nrow = length(terms), ncol = ncol(model))
 
   domains = lapply(priors, function(prior) {

@@ -131,7 +131,7 @@ match_formals = function(formals, ..., .args = NULL, .force = TRUE) {
 
 #' Get term labels from a formula.
 #'
-#' The function \code{attr(terms(formula), "term.labels")} does not include
+#' The function \code{attr(stats::terms(formula), "term.labels")} does not include
 #' the intercept.
 #'
 #' @param formula A \code{formula} object.
@@ -145,11 +145,11 @@ formula_labels = function(formula, include_intercept = TRUE) {
                                   class(formula)), collapse = " ")
   assertthat::assert_that(inherits(formula, "formula"), msg = msg)
 
-  labels = attr(terms(formula), "term.labels")
+  labels = attr(stats::terms(formula), "term.labels")
 
   if(!include_intercept) return(labels)
 
-  if(attr(terms(formula), "intercept") == 1) c("(Intercept)", labels)
+  if(attr(stats::terms(formula), "intercept") == 1) c("(Intercept)", labels)
   else labels
 
 }

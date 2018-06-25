@@ -2,19 +2,36 @@
 % Please edit documentation in R/interpretation_functions.R
 \name{dppredictive}
 \alias{dppredictive}
-\title{Posterior predictive distribution of a \code{snifmar} object.}
+\alias{dppredictive}
+\title{Prediction for \code{straussR} objects.}
 \usage{
+dppredictive(x, object)
+
 dppredictive(x, object)
 }
 \arguments{
+\item{x}{Covariates.}
+
+\item{object}{A \code{straussR} object.}
+
+\item{y}{The point where the density is predicted.}
+
+\item{n}{Number of observations.}
+
+\item{log}{Logical; If \code{TRUE}, returns the logarithm of the density.}
+
 \item{x}{Numeric. A vector of points where the posterior predictive
 distribution is to be evaluated.}
 
-\item{object}{A \code{snifmar} object.}
+\item{object}{A \code{straussR} object.}
 }
 \value{
+A vector of densities with the same arity as \code{y}.
+
 A vector of densities with the same arity as \code{x}.
 }
 \description{
-Posterior predictive distribution of a \code{snifmar} object.
+Prediction for \code{straussR} objects.
+
+Posterior predictive distribution of a \code{straussR} object.
 }

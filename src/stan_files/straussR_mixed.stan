@@ -1,9 +1,9 @@
 functions {
-#include /functions/densities.stan
-#include /functions/beta_priors.stan
-#include /functions/parameters_array.stan
-#include /functions/likelihood.stan
-#include /functions/distributions.stan
+#include /chunks/densities.stan
+#include /chunks/beta_priors.stan
+#include /chunks/parameters_array.stan
+#include /chunks/likelihood.stan
+#include /chunks/distributions.stan
 
 }
 

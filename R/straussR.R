@@ -16,6 +16,7 @@ straussR_fixed = rstan::stan_model(file = "src/stan_files/straussR_fixed.stan",
 #' mentioned in \code{formula}.
 #' @param data An optional data frame. NOTE: Currently required.
 #' @return A \code{STAN} object.
+#' @export
 
 straussR = function(formula, priors, data, ...) {
 

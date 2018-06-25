@@ -4,7 +4,7 @@
 \alias{straussR}
 \title{Mixture-based Bayesian Meta-analysis}
 \usage{
-straussR(formula, priors = NULL, data = NULL, ...)
+straussR(formula, priors, data, ...)
 }
 \arguments{
 \item{formula}{Model formula. Should have the \code{z} values on the left
@@ -13,7 +13,7 @@ hand side and the random effects distribution on the right hand side.}
 \item{priors}{List of formulas. Should contain priors for all parameters
 mentioned in \code{formula}.}
 
-\item{data}{An optional data frame.}
+\item{data}{An optional data frame. NOTE: Currently required.}
 }
 \value{
 A \code{STAN} object.

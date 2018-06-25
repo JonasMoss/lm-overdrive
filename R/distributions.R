@@ -15,7 +15,6 @@
 #' \code{log(p)}.
 #' @param lower.tail Logical; If \code{TRUE}, probabilities are
 #' \eqn{P(X \leq x)}, otherwise \eqn{P(X \leq x)}.
-#' @export
 #' @name FoldedNormal
 NULL
 
@@ -78,7 +77,6 @@ sdfnorm = function(mean = 0, sd = 1) sqrt(vfnorm(mean = mean, sd = sd))
 #' \code{log(p)}.
 #' @param lower.tail Logical; If \code{TRUE}, probabilities are
 #' \eqn{P(X \leq x)}, otherwise \eqn{P(X \leq x)}.
-#' @export
 #' @name TruncatedFoldedNormal
 NULL
 
